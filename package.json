@@ -1,0 +1,47 @@
+{
+  "name": "serverless-qcloud-scf",
+  "version": "0.0.1",
+  "description": "Provider plugin for the Serverless Framework v1.x which adds support for Qcloud SCF(Serverless Cloud Function).",
+  "main": "index.js",
+  "author": "colder",
+  "license": "MIT",
+  "repository": {
+    "git": "https://github.com/vitarn/serverless-qcloud-scf"
+  },
+  "scripts": {
+    "test": "jest --maxWorkers=5",
+    "coverage": "jest --maxWorkers=5 --coverage",
+    "lint": "eslint . --cache"
+  },
+  "homepage": "https://github.com/vitarn/serverless-qcloud-scf",
+  "keywords": [
+    "serverless",
+    "serverless framework",
+    "serverless applications",
+    "serverless modules",
+    "serverless cloud function",
+    "qcloud",
+    "qcloud scf",
+    "iot",
+    "internet of things",
+    "serverless.com"
+  ],
+  "dependencies": {
+    "async": "^2.1.4",
+    "bluebird": "^3.4.7",
+    "chalk": "^1.1.3",
+    "cos-nodejs-sdk-v5": "^2.2.6",
+    "fs-extra": "^3.0.1",
+    "ini": "^1.3.5",
+    "lodash": "^4.17.4",
+    "qcloudapi-sdk": "^0.1.6"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.16",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.2.0",
+    "eslint-plugin-import": "^2.2.0",
+    "jest": "^19.0.2",
+    "sinon": "^1.17.7"
+  }
+}

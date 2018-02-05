@@ -1,0 +1,20 @@
+{
+  "Description": "The Qcloud template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "QCLOUD::COS::Bucket",
+      "Properties": {
+        "BucketName": "to-be-replaced-by-serverless",
+        "Region": "to-be-replaced-by-serverless"
+      }
+    },
+    "ServerlessCloudFunctions": [
+      {
+        "Type": "QCLOUD::SCF::Function",
+        "Properties": {
+          "functionName": "to-be-replaced-by-serverless"
+        }
+      }
+    ]
+  }
+}
