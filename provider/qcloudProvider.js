@@ -11,7 +11,6 @@ const QcloudAPI = require('qcloudapi-sdk')
 const QcloudCOS = require('cos-nodejs-sdk-v5')
 
 const naming = require('./lib/naming')
-const getCOSRegion = require('./lib/getCOSRegion')
 
 class QcloudProvider {
   static getProviderName() {
@@ -26,10 +25,10 @@ class QcloudProvider {
     this.naming = naming
 
     this.sdk = {
-      scf: this.getQcloudAPI({ serviceType: 'scf' }),
-      apigateway: this.getQcloudAPI({ serviceType: 'apigateway' }),
+      scf: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'scf' })),
+      apigateway: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'apigateway' })),
       cos: BbPromise.promisifyAll(this.getQcloudCOS()),
-      cls: this.getQcloudAPI({ serviceType: 'cls' }),
+      cls: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'cls' })),
 
       /**
        * the following is just a dummy assignment and should be updated once the official API is available
@@ -104,14 +103,24 @@ class QcloudProvider {
     return appid
   }
 
-  getCOSRegion(region) {
-    return getCOSRegion(region)
+  getQcloudAPIRegion(region) {
+    const regionMap = {
+      bj: 'ap-beijing',
+      sh: 'ap-shanghai',
+      gz: 'ap-guangzhou',
+    }
+
+    const apiRegion = regionMap[region]
+
+    if (!apiRegion) throw new Error(`Qcloud scf not supported in region ${region}`)
+
+    return apiRegion
   }
 
   getCOSBucket(bucket) {
     return Object.assign({}, bucket, {
       Bucket: `${bucket.Bucket}-${this.getQcloudAppID()}`,
-      Region: this.getCOSRegion(bucket.Region),
+      Region: this.getQcloudAPIRegion(bucket.Region),
     })
   }
 }

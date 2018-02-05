@@ -1,55 +1,67 @@
-'use strict';
+'use strict'
 
-const fs = require('fs');
-const path = require('path');
-const _ = require('lodash');
+const fs = require('fs')
+const path = require('path')
+const _ = require('lodash')
 
-const BbPromise = require('bluebird');
+const BbPromise = require('bluebird')
 
 module.exports = {
   setupFunctions() {
-    this.functions = _.filter(this.templates.update.Resources,
-      (item) => this.provider.isFunctionType(item.Type))
-      .map((item) => item.Properties);
-    this.functionMap = new Map();
+    const { provider, templates, serverless: { cli } } = this
+    const bucket = templates.update.Resources.DeploymentBucket
+    const functions = templates.update.Resources.CloudFunctions || []
+    const cosBucket = provider.getCOSBucket(bucket)
 
-    return BbPromise.bind(this)
-      .then(this.checkExistingFunctions)
-      .then(this.createOrUpdateFunctions);
-  },
+    const codeObject = {
+      cosBucketName: cosBucket.Bucket,
+      cosObjectName: ''
+    }
 
-  checkExistingFunctions() {
-    return BbPromise.all(this.functions.map((func) => {
-      return this.provider.getFunction(func.service, func.name)
-        .then(
-          (foundFunction) => this.functionMap.set(func.name, !!foundFunction));
-    }));
-  },
+    return BbPromise.all(functions.map(func => {
+      return provider.sdk.scf.requestAsync(_.assign(
+        _.pick(func, 'Region', 'functionName'),
+        { Action: 'GetFunction' }
+      ))
+        .catch(err => {
+          cli.log('ERROR: Qcloud SCF GetFunction fail!')
+          throw err.error
+        })
+        .then(res => {
+          if (res.code == 0) {
+            cli.log(`Update function ${func.functionName}...`)
 
-  createOrUpdateFunctions() {
-    return BbPromise.mapSeries(this.functions,
-      (func) => this.createOrUpdateFunction(func));
-  },
+            return provider.sdk.scf.requestAsync(_.assign(
+              {},
+              func,
+              {
+                Action: 'UpdateFunction',
+                codeType: 'Cos',
+                codeObject,
+              }
+            ))
+              .catch(err => {
+                cli.log('ERROR: Qcloud SCF CreateFunction fail!')
+                throw err.error
+              })
+              .then(res => console.log(res))
+          }
 
-  createOrUpdateFunction(func) {
-    if (this.functionMap.get(func.name)) {
-      this.serverless.cli.log(`Updating function ${func.name}...`);
-      return this.provider.updateFunction(func.service, func.name, func)
-        .then(() => {
-          this.serverless.cli.log(`Updated function ${func.name}`);
-        }, (err) => {
-          this.serverless.cli.log(`Failed to update function ${func.name}!`);
-          throw err;
-        });
-    } 
-    this.serverless.cli.log(`Creating function ${func.name}...`);
-    return this.provider.createFunction(func.service, func.name, func)
-      .then(() => {
-        this.serverless.cli.log(`Created function ${func.name}`);
-      }, (err) => {
-        this.serverless.cli.log(`Failed to create function ${func.name}!`);
-        throw err;
-      });
-    
+          cli.log(`Create function ${func.functionName}...`)
+          return provider.sdk.scf.requestAsync(_.assign(
+            {},
+            func,
+            {
+              Action: 'CreateFunction',
+              codeObject,
+            }
+          ))
+            .catch(err => {
+              cli.log('ERROR: Qcloud SCF CreateFunction fail!')
+              throw err.error
+            })
+            .then(res => console.log(res))
+        })
+    }))
   }
-};
+}
