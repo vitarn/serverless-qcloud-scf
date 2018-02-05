@@ -12,7 +12,7 @@ const AliyunProvider = require('../../provider/aliyunProvider');
 const AliyunDeploy = require('../aliyunDeploy');
 const Serverless = require('../../test/serverless');
 
-describe('UploadArtifacts', () => {
+xdescribe('UploadArtifacts', () => {
   let serverless;
   let aliyunDeploy;
 

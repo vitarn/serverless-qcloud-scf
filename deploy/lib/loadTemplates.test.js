@@ -9,7 +9,7 @@ const QcloudProvider = require('../../provider/qcloudProvider');
 const QcloudDeploy = require('../qcloudDeploy');
 const Serverless = require('../../test/serverless');
 
-describe('UploadArtifacts', () => {
+xdescribe('UploadArtifacts', () => {
   let serverless;
   let qcloudDeploy;
   const servicePath = path.join(__dirname, '..', '..', 'test');

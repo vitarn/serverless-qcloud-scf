@@ -1,16 +1,24 @@
-'use strict';
+'use strict'
 
-const fs = require('fs');
+const fs = require('fs')
 
 module.exports = {
   uploadArtifacts() {
-    const objectId = this.provider.getStorageObjectId();
-    const object = this.templates.update.Resources[objectId].Properties;
-    const bucket = this.templates.create.Resources[this.provider.getStorageBucketId()].Properties;
+    const { templates, provider, serverless: { cli } } = this
 
-    this.serverless.cli.log(`Uploading ${object.ObjectName} to OSS bucket ${bucket.BucketName}...`);
-    return this.provider.uploadObject(object.ObjectName, object.LocalPath).then(() => {
-      this.serverless.cli.log(`Uploaded ${object.ObjectName} to OSS bucket ${bucket.BucketName}`);
-    });
-  }
-};
+    const bucket = templates.update.Resources.DeploymentBucket
+    const cosBucket = provider.getCOSBucket(bucket)
+
+    cosBucket.Body = fs.createReadStream(cosBucket.Body)
+
+    cli.log(`Uploading ${bucket.Key} to OSS bucket ${bucket.Bucket}...`)
+    return provider.sdk.cos.putObjectAsync(cosBucket)
+      .catch(err => {
+        cli.log('ERROR Qcloud COS putObject fail')
+        throw err.error
+      })
+      .then(() => {
+        cli.log(`Uploaded ${bucket.Key} to OSS bucket ${bucket.Bucket}`)
+      })
+  },
+}

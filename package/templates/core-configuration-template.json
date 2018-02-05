@@ -1,19 +1,16 @@
 {
   "Description": "The Qcloud template for this Serverless application",
   "Resources": {
-    "ServerlessDeploymentBucket": {
-      "Type": "QCLOUD::COS::Bucket",
-      "Properties": {
-        "BucketName": "to-be-replaced-by-serverless",
-        "Region": "to-be-replaced-by-serverless"
-      }
+    "DeploymentBucket": {
+      "Bucket": "to-be-replaced-by-serverless",
+      "Region": "to-be-replaced-by-serverless"
     },
-    "ServerlessCloudFunctions": [
+    "CloudFunctions": [
       {
-        "Type": "QCLOUD::SCF::Function",
-        "Properties": {
-          "functionName": "to-be-replaced-by-serverless"
-        }
+        "functionName": "to-be-replaced-by-serverless",
+        "runtime": "Nodejs6.10",
+        "memorySize": 128,
+        "timeout": 3
       }
     ]
   }

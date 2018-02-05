@@ -1,16 +1,28 @@
-'use strict';
+'use strict'
 
-const BbPromise = require('bluebird');
+const path = require('path')
+const fs = require('fs')
+const BbPromise = require('bluebird')
+const _ = require('lodash')
 
 module.exports = {
   generateArtifactDirectoryName() {
-    const date = new Date();
-    const serviceWithStage = `${this.serverless.service.service}/${this.options.stage}`;
-    const dateString = `${date.getTime().toString()}-${date.toISOString()}`;
+    const { options, serverless: { service } } = this
+    const date = new Date()
+    const serviceWithStage = `${service.service}/${options.stage || 'dev'}`
+    const dateString = `${date.getTime().toString()}-${date.toISOString()}`
+    const fileName = service.package.artifact.split(path.sep).pop()
+    const { DeploymentBucket } = service.provider.compiledConfigurationTemplate.Resources
 
-    this.serverless.service.package
-      .artifactDirectoryName = `serverless/${serviceWithStage}/${dateString}`;
+    _.assign(
+      service.provider.compiledConfigurationTemplate.Resources.DeploymentBucket,
+      {
+        Key: `${serviceWithStage}/${dateString}/${fileName}`,
+        Body: service.package.artifact,
+        ContentLength: fs.statSync(service.package.artifact).size,
+      }
+    )
 
-    return BbPromise.resolve();
+    return BbPromise.resolve()
   },
-};
+}

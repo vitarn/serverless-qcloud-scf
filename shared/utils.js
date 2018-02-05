@@ -1,15 +1,15 @@
-'use strict';
+'use strict'
 
-const _ = require('lodash');
-const BbPromise = require('bluebird');
+const _ = require('lodash')
+const BbPromise = require('bluebird')
 
 module.exports = {
   setDefaults() {
     this.options.stage = _.get(this, 'options.stage')
-      || 'dev';
+      || 'dev'
     this.options.region = _.get(this, 'options.region')
-      || 'gz';
+      || 'gz'
 
-    return BbPromise.resolve();
+    return BbPromise.resolve()
   },
-};
+}

@@ -13,12 +13,11 @@ xdescribe('PrepareDeployment', () => {
 
   beforeEach(() => {
     coreResources = {
-      resources: [
-        {
-          type: 'storage.v1.bucket',
-          name: 'will-be-replaced-by-serverless',
+      Resources: {
+        ServerlessDeploymentBucket: {
+          Properties: 'will-be-replaced-by-serverless',
         },
-      ],
+      },
     };
     serverless = new Serverless();
     serverless.service.service = 'my-service';
@@ -29,7 +28,7 @@ xdescribe('PrepareDeployment', () => {
     serverless.setProvider('qcloud', new QcloudProvider(serverless));
     const options = {
       stage: 'dev',
-      region: 'us-central1',
+      region: 'gz',
     };
     qcloudPackage = new QcloudPackage(serverless, options);
   });

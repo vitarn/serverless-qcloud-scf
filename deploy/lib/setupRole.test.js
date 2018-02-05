@@ -13,7 +13,7 @@ const AliyunDeploy = require('../aliyunDeploy');
 const Serverless = require('../../test/serverless');
 const { role, fullRole, execRole, fullExecRole } = require('../../test/data');
 
-describe('setupRole', () => {
+xdescribe('setupRole', () => {
   let serverless;
   let aliyunDeploy;
 

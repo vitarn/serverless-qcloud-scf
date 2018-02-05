@@ -17,7 +17,7 @@ const {
   logProject, fullLogProject, logStore, fullLogStore, fullService
 } = require('../../test/data');
 
-describe('setupServices', () => {
+xdescribe('setupServices', () => {
   let serverless;
   let aliyunDeploy;
   let templatePath;

@@ -1,39 +1,34 @@
-'use strict';
+'use strict'
 
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
-const ini = require('ini');
+const path = require('path')
+const fs = require('fs')
+const os = require('os')
+const ini = require('ini')
 
-const BbPromise = require('bluebird');
-const _ = require('lodash');
-const QcloudAPI = require('qcloudapi-sdk');
-const QcloudCOS = require('cos-nodejs-sdk-v5');
+const BbPromise = require('bluebird')
+const _ = require('lodash')
+const QcloudAPI = require('qcloudapi-sdk')
+const QcloudCOS = require('cos-nodejs-sdk-v5')
 
-const constants = {
-  providerName: 'qcloud'
-};
+const naming = require('./lib/naming')
+const getCOSRegion = require('./lib/getCOSRegion')
 
 class QcloudProvider {
   static getProviderName() {
-    return constants.providerName;
+    return naming.providerName
   }
 
   constructor(serverless) {
-    this.serverless = serverless;
-    this.provider = this; // only load plugin in a Qcloud service context
-    this.serverless.setProvider(constants.providerName, this);
+    this.serverless = serverless
+    this.provider = this // only load plugin in a Qcloud service context
+    this.serverless.setProvider(naming.providerName, this)
 
-    this.naming = {
-      deploymentBucketName: 'serverless-qcloud-scf',
-      deploymentBucketType: 'QCLOUD::COS::Bucket',
-      cloudFunctionType: 'QCLOUD::SCF::Function',
-    }
+    this.naming = naming
 
     this.sdk = {
       scf: this.getQcloudAPI({ serviceType: 'scf' }),
       apigateway: this.getQcloudAPI({ serviceType: 'apigateway' }),
-      cos: this.getQcloudCOS(),
+      cos: BbPromise.promisifyAll(this.getQcloudCOS()),
       cls: this.getQcloudAPI({ serviceType: 'cls' }),
 
       /**
@@ -41,55 +36,7 @@ class QcloudProvider {
        * @see https://cloud.tencent.com/product/coc
        */
       coc: null,
-    };
-  }
-
-  getQcloudAPI(options) {
-    return new QcloudAPI(_.merge(this.getQcloudOptions(), options));
-  }
-
-  getQcloudCOS() {
-    return new QcloudCOS(this.getQcloudOptions());
-  }
-
-  getQcloudOptions() {
-    if (this._qcloudOptions) return this._qcloudOptions;
-
-    const { QCLOUD_SECRETID: SecretId, QCLOUD_SECRETKEY: SecretKey } = process.env;
-
-    if (SecretId && SecretKey) {
-      this._qcloudOptions = {
-        SecretId, SecretKey
-      };
-
-      return this._qcloudOptions;
     }
-
-    let credentials = this.serverless.service.provider.credentials;
-    const credParts = credentials.split(path.sep);
-
-    if (credParts[0] === '~') {
-      credParts[0] = os.homedir();
-      credentials = credParts.reduce((memo, part) => path.join(memo, part), '');
-    }
-
-    const keyFileContent = fs.readFileSync(credentials).toString();
-    const key = ini.parse(keyFileContent).default;
-
-    this._qcloudOptions = {
-      SecretId: key.qcloud_secretid,
-      SecretKey: key.qcloud_secretkey,
-    };
-
-    return this._qcloudOptions;
-  }
-
-  getAppID() {
-    const { QCLOUD_APPID: appid } = process.env;
-
-    if (!appid) this.serverless.cli.log(`WARN: Missing env "QCLOUD_APPID". It's required params for Qcloud COS bucket name.`)
-
-    return appid;
   }
 
   isServiceSupported(service) {
@@ -97,56 +44,76 @@ class QcloudProvider {
       const errorMessage = [
         `Unsupported service API "${service}".`,
         ` Supported service APIs are: ${Object.keys(this.sdk).join(', ')}`,
-      ].join('');
+      ].join('')
 
-      throw new Error(errorMessage);
+      throw new Error(errorMessage)
     }
   }
 
-  /**
-   * Trans short region name to cos region name
-   * @param {string} region 
-   * @see https://cloud.tencent.com/document/product/436/6224
-   */
-  toCOSRegion(region) {
-    const regionMap = {
-      bj: 'ap-beijing',
-      sh: 'ap-shanghai',
-      gz: 'ap-guangzhou',
-    }
-
-    return regionMap[region]
+  getQcloudAPI(options) {
+    return new QcloudAPI(_.merge(this.getQcloudOptions(), options))
   }
 
-  /**
-   * @param {string} name
-   * @param {string} region
-   * @returns {{name: string, region: string, exist: boolean, auth: boolean}}
-   */
-  headBucket(name, region) {
-    const { serverless: { cli } } = this;
+  getQcloudCOS() {
+    return new QcloudCOS(this.getQcloudOptions())
+  }
 
-    cli.log(`Qcloud COS get bucket ${name} ${region}`)
+  getQcloudOptions() {
+    if (this._qcloudOptions) return this._qcloudOptions
 
-    return new BbPromise((resolve, reject) => {
-      this.sdk.cos.headBucket({
-        Bucket: `${name}-${this.getAppID()}`,
-        Region: this.toCOSRegion(region),
-      }, (err, data) => {
-        if (err) {
-          cli.log(`Qcloud cos api error:`)
-          console.log(err)
-          reject(err)
-        } else {
-          resolve({
-            name, region,
-            exist: data.BucketExist,
-            auth: data.BucketAuth,
-          })
-        }
-      })
+    const { QCLOUD_SECRETID: SecretId, QCLOUD_SECRETKEY: SecretKey } = process.env
+
+    if (SecretId && SecretKey) {
+      this._qcloudOptions = {
+        SecretId, SecretKey
+      }
+
+      return this._qcloudOptions
+    }
+
+    const credentials = this.getQcloudCredentials()
+
+    this._qcloudOptions = credentials
+
+    return this._qcloudOptions
+  }
+
+  getQcloudCredentials() {
+    let credentials = this.serverless.service.provider.credentials
+    const credParts = credentials.split(path.sep)
+
+    if (credParts[0] === '~') {
+      credParts[0] = os.homedir()
+      credentials = credParts.reduce((memo, part) => path.join(memo, part), '')
+    }
+
+    const keyFileContent = fs.readFileSync(credentials).toString()
+    const key = ini.parse(keyFileContent).default
+
+    return {
+      SecretId: key.qcloud_secretid,
+      SecretKey: key.qcloud_secretkey,
+    }
+  }
+
+  getQcloudAppID() {
+    const { QCLOUD_APPID: appid } = process.env
+
+    if (!appid) this.serverless.cli.log(`WARN: Missing env "QCLOUD_APPID". It's required params for Qcloud COS bucket name.`)
+
+    return appid
+  }
+
+  getCOSRegion(region) {
+    return getCOSRegion(region)
+  }
+
+  getCOSBucket(bucket) {
+    return Object.assign({}, bucket, {
+      Bucket: `${bucket.Bucket}-${this.getQcloudAppID()}`,
+      Region: this.getCOSRegion(bucket.Region),
     })
   }
 }
 
-module.exports = QcloudProvider;
+module.exports = QcloudProvider
