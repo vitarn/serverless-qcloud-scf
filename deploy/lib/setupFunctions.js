@@ -14,8 +14,8 @@ module.exports = {
     const cosBucket = provider.getCOSBucket(bucket)
 
     const codeObject = {
-      cosBucketName: cosBucket.Bucket,
-      cosObjectName: ''
+      cosBucketName: bucket.Bucket, // TODO: scf api append appid?
+      cosObjectName: cosBucket.Key,
     }
 
     return BbPromise.all(functions.map(func => {
@@ -53,6 +53,7 @@ module.exports = {
             func,
             {
               Action: 'CreateFunction',
+              Region: func.Region,
               codeObject,
             }
           ))
@@ -60,7 +61,14 @@ module.exports = {
               cli.log('ERROR: Qcloud SCF CreateFunction fail!')
               throw err.error
             })
-            .then(res => console.log(res))
+            .then(res => {
+              if (res.code != 0) {
+                cli.log('ERROR: Qcloud SCF CreateFunction fail!')
+                const error = new Error(res.message)
+                error.name = res.codeDesc
+                throw error
+              }
+            })
         })
     }))
   }

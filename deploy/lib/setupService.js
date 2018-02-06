@@ -2,6 +2,7 @@
 
 const fs = require('fs')
 const path = require('path')
+const _ = require('lodash')
 
 const BbPromise = require('bluebird')
 
@@ -25,6 +26,7 @@ module.exports = {
       // .then(this.checkForExistingService)
       // .then(this.createServiceIfNotExists)
       .then(this.createBucketIfNotExists)
+      .then(this.createAPIGatewayIfNotExists)
   },
 
   setupExecRole() {
@@ -145,7 +147,13 @@ module.exports = {
       })
       .then(headBucket => {
         if (headBucket.BucketExist) { 
-          return cli.log(`Bucket ${bucket.Bucket} already exists.`)
+          cli.log(`Bucket ${bucket.Bucket} already exists.`)
+          if (!headBucket.BucketAuth && cosBucket.ACL) {
+            cli.log(`Update bucket ${bucket.Bucket} ACL.`)
+            return provider.sdk.cos.putBucketAclAsync(cosBucket)
+          }
+
+          return
         }
 
         cli.log(`Creating bucket ${bucket.Bucket}...`)
@@ -154,5 +162,23 @@ module.exports = {
             cli.log(`Created bucket ${bucket.Bucket}`)
           })
       })
-  }
+  },
+
+  createAPIGatewayIfNotExists() {
+    const { templates, provider, serverless: { cli } } = this
+    const { APIGateway } = templates.create.Resources
+
+    cli.log(`Creating api gateway ${APIGateway.serviceName}...`)
+    return provider.sdk.apigateway.requestAsync(_.assign({}, APIGateway, {
+      Action: 'CreateService',
+    }))
+      .catch(err => {
+        cli.log('ERROR: Qcloud API Gateway CreateService fail')
+        console.log(err)
+        throw err
+      })
+      .then(res => {
+        console.log(res)
+      })
+  },
 }
