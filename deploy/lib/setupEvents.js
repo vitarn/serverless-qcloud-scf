@@ -1,212 +1,227 @@
-'use strict';
+'use strict'
 
-const fs = require('fs');
-const path = require('path');
-const _ = require('lodash');
+const fs = require('fs')
+const path = require('path')
+const _ = require('lodash')
 
-const BbPromise = require('bluebird');
+const BbPromise = require('bluebird')
 
 module.exports = {
-  setupEvents() {
-    this.apis = _.filter(
-      this.templates.update.Resources,
-      (item) => this.provider.isApiType(item.Type))
-      .map((item) => item.Properties);
-    this.triggers = _.filter(
-      this.templates.update.Resources,
-      (item) => this.provider.isTriggerType(item.Type))
-      .map((item) => item.Properties);
+  async setupEvents() {
+    const { templates } = this
+
+    this.apis = templates.update.Resources.APIGatewayApis
+    this.triggers = []
 
     return BbPromise.bind(this)
-      .then(this.setupInvokeRole)
+      // .then(this.setupInvokeRole)
       .then(this.createApisIfNeeded)
-      .then(this.createTriggersIfNeeded);
+      .then(this.releaseAPIGateway)
+    // .then(this.createTriggersIfNeeded)
   },
 
-  setupInvokeRole() {
-    const role = this.templates.update.Resources[this.provider.getInvokeRoleLogicalId()].Properties;
+  async createApisIfNeeded() {
+    if (!this.apis.length) return
 
-    // TODO: update if needed
-    return BbPromise.bind(this)
-      .then(() => this.setupRole(role))
-      .then((invokeRole) => this.invokeRole = invokeRole);
+    const { provider, templates, serverless: { cli } } = this
+    const { Resources } = templates.update
+    const { apigateway } = provider.sdk
+    const { serviceId } = Resources.APIGateway
+
+    return BbPromise.all(this.apis.map(async api => {
+      _.assign(api, { serviceId })
+
+      const res = await apigateway.describeApisStatus({
+        serviceId,
+        searchName: api.requestConfig.path,
+        limit: 100,
+      })
+
+      const existsApis = res.apiIdStatusSet.filter(
+        a => a.method === api.requestConfig.method && a.path === api.requestConfig.path
+      )
+
+      // Qcloud disallow same "METHOD /path". So existsApis length is zero or one.
+      if (existsApis.length === 0) {
+        cli.log(`Creating api ${api.requestConfig.path}...`)
+
+        const res = await apigateway.createApi(api)
+
+        _.assign(api, res)
+      } else {
+        cli.log(`Updating api ${api.requestConfig.path}...`)
+
+        // Assign here bcs modifiApi return {}
+        _.assign(api, _.pick(existsApis[0], 'apiId', 'serviceId'))
+
+        const res = await apigateway.modifyApi(api)
+      }
+    }))
+
+    // return BbPromise.bind(this)
+    //   .then(this.createApiGroupIfNotExists)
+    //   .then(this.checkExistingApis)
+    //   .then(this.createOrUpdateApis)
+    //   .then(this.deployApis)
   },
 
-  createApisIfNeeded() {
-    if (!this.apis.length) {
-      return BbPromise.resolve();
+  async releaseAPIGateway() {
+    const { provider, options, service, templates, serverless: { cli } } = this
+    const { APIGateway } = templates.update.Resources
+    const { apigateway } = provider.sdk
+    const stage = _.get(options, 'stage')
+      || _.get(service, 'provider.stage')
+      || 'dev'
+
+    cli.log(`Publishing API Gateway service ${APIGateway.serviceName}...`)
+
+    // 'test' | 'prepub' | 'release'
+    const envMap = {
+      dev: 'test',
+      test: 'prepub',
+      prod: 'release'
     }
 
-    return BbPromise.bind(this)
-      .then(this.createApiGroupIfNotExists)
-      .then(this.checkExistingApis)
-      .then(this.createOrUpdateApis)
-      .then(this.deployApis);
+    const res = await apigateway.releaseService({
+      serviceId: APIGateway.serviceId,
+      environmentName: envMap[stage],
+      releaseDesc: 'Release by serverless'
+    })
+
+    templates.update.Resources.APIGatewayRelease = { ...res, environmentName: envMap[stage] }
   },
 
   createTriggersIfNeeded() {
     if (!this.triggers.length) {
-      return BbPromise.resolve();
+      return BbPromise.resolve()
     }
 
     return BbPromise.bind(this)
       .then(this.checkExistingTriggers)
-      .then(this.createOrUpdateTriggers);
-  },
-
-  createApiGroupIfNotExists() {
-    const groupResource = this.templates.update.Resources[this.provider.getApiGroupLogicalId()];
-
-    if (!groupResource) {
-      return BbPromise.resolve();  // No API needed
-    }
-    const group = groupResource.Properties;
-
-    const groupName = group.GroupName;
-    const groupDesc = group.Description;
-
-    return this.provider.getApiGroup(groupName)
-      .then((foundGroup) => {
-        if (foundGroup) {
-          this.apiGroup = foundGroup;
-          this.serverless.cli.log(`API group ${group.GroupName} exists.`);
-          return foundGroup;
-        }
-        return this.createApiGroup(group);
-      });
-  },
-
-  createApiGroup(group) {
-    this.serverless.cli.log(`Creating API group ${group.GroupName}...`);
-    return this.provider.createApiGroup(group)
-      .then((createdGroup) => {
-        this.apiGroup = createdGroup;
-        this.serverless.cli.log(`Created API group ${group.GroupName}`);
-        return createdGroup;
-      });
+      .then(this.createOrUpdateTriggers)
   },
 
   checkExistingApis() {
     if (!this.apis.length) {
-      return;
+      return
     }
 
     return this.provider.getApis({
       GroupId: this.apiGroup.GroupId
     }).then((apis) => {
-      this.apiMap = new Map(apis.map((api) => [api.ApiName, api]));
+      this.apiMap = new Map(apis.map((api) => [api.ApiName, api]))
       this.apis.forEach((api) => {
         if (!this.apiMap.get(api.ApiName)) {
-          this.apiMap.set(api.ApiName, false);
+          this.apiMap.set(api.ApiName, false)
         }
-      });
-    });
+      })
+    })
   },
 
   createOrUpdateApis(group) {
     if (!this.apis.length) {
-      return;
+      return
     }
 
     return BbPromise.mapSeries(this.apis,
-      (api) => this.createOrUpdateApi(api));
+      (api) => this.createOrUpdateApi(api))
   },
 
   createOrUpdateApi(api) {
-    const group = this.apiGroup;
-    const role = this.invokeRole;
-    const apiInMap = this.apiMap.get(api.ApiName);
+    const group = this.apiGroup
+    const role = this.invokeRole
+    const apiInMap = this.apiMap.get(api.ApiName)
     if (apiInMap) {
-      const apiProps = Object.assign({ApiId: apiInMap.ApiId}, api);
-      this.serverless.cli.log(`Updating API ${api.ApiName}...`);
+      const apiProps = Object.assign({ ApiId: apiInMap.ApiId }, api)
+      this.serverless.cli.log(`Updating API ${api.ApiName}...`)
       return this.provider.updateApi(group, role, apiProps)
         .then((newApi) => {
-          this.serverless.cli.log(`Updated API ${api.ApiName}`);
+          this.serverless.cli.log(`Updated API ${api.ApiName}`)
         }, (err) => {
-          this.serverless.cli.log(`Failed to update API ${api.ApiName}!`);
-          throw err;
-        });
-    } 
-    this.serverless.cli.log(`Creating API ${api.ApiName}...`);
+          this.serverless.cli.log(`Failed to update API ${api.ApiName}!`)
+          throw err
+        })
+    }
+    this.serverless.cli.log(`Creating API ${api.ApiName}...`)
     return this.provider.createApi(group, role, api)
       .then((newApi) => {
-        this.serverless.cli.log(`Created API ${api.ApiName}`);
-        this.apiMap.set(api.ApiName, newApi);
+        this.serverless.cli.log(`Created API ${api.ApiName}`)
+        this.apiMap.set(api.ApiName, newApi)
       }, (err) => {
-        this.serverless.cli.log(`Failed to create API ${api.ApiName}!`);
-        throw err;
-      });
-    
+        this.serverless.cli.log(`Failed to create API ${api.ApiName}!`)
+        throw err
+      })
+
   },
 
   deployApis() {
-    const group = this.apiGroup;
+    const group = this.apiGroup
     return BbPromise.mapSeries(this.apis, (api) => {
-      const apiProps = this.apiMap.get(api.ApiName);
-      this.serverless.cli.log(`Deploying API ${api.ApiName}...`);
+      const apiProps = this.apiMap.get(api.ApiName)
+      this.serverless.cli.log(`Deploying API ${api.ApiName}...`)
       return this.provider.deployApi(group, apiProps).then(
         () => {
-          this.serverless.cli.log(`Deployed API ${api.ApiName}`);
-          const config = api.RequestConfig;
-          const func = api.ServiceConfig.FunctionComputeConfig;
+          this.serverless.cli.log(`Deployed API ${api.ApiName}`)
+          const config = api.RequestConfig
+          const func = api.ServiceConfig.FunctionComputeConfig
           this.serverless.cli.log(`${config.RequestHttpMethod} ` +
-          `http://${this.apiGroup.SubDomain}${config.RequestPath} -> ` +
-          `${func.ServiceName}.${func.FunctionName}`);
+            `http://${this.apiGroup.SubDomain}${config.RequestPath} -> ` +
+            `${func.ServiceName}.${func.FunctionName}`)
         },
         (err) => {
-          this.serverless.cli.log(`Failed to deploy API ${api.ApiName}!`);
-          throw err;
-        });
-    });
+          this.serverless.cli.log(`Failed to deploy API ${api.ApiName}!`)
+          throw err
+        })
+    })
   },
 
   checkExistingTriggers() {
-    this.triggerMap = new Map();
+    this.triggerMap = new Map()
     return BbPromise.mapSeries(this.triggers, (trigger) => {
       return this.provider.getTrigger(
         trigger.serviceName, trigger.functionName, trigger.triggerName
       ).then((foundTrigger) => {
         if (foundTrigger) {
-          this.triggerMap.set(trigger.triggerName, foundTrigger);
+          this.triggerMap.set(trigger.triggerName, foundTrigger)
         }
-      });
-    });
+      })
+    })
   },
 
   createOrUpdateTriggers() {
     if (!this.triggers.length) {
-      return;
+      return
     }
 
     return BbPromise.mapSeries(this.triggers,
-      (trigger) => this.createOrUpdateTrigger(trigger));
+      (trigger) => this.createOrUpdateTrigger(trigger))
   },
 
   createOrUpdateTrigger(trigger) {
-    const role = this.invokeRole;
-    const triggerName = trigger.triggerName;
-    const serviceName = trigger.serviceName;
-    const functionName = trigger.functionName;
-    const triggerInMap = this.triggerMap.get(triggerName);
+    const role = this.invokeRole
+    const triggerName = trigger.triggerName
+    const serviceName = trigger.serviceName
+    const functionName = trigger.functionName
+    const triggerInMap = this.triggerMap.get(triggerName)
     if (triggerInMap) {
-      this.serverless.cli.log(`Updating trigger ${triggerName}...`);
+      this.serverless.cli.log(`Updating trigger ${triggerName}...`)
       return this.provider.updateTrigger(serviceName, functionName, triggerName, trigger, role)
         .then((newtrigger) => {
-          this.serverless.cli.log(`Updated trigger ${triggerName}`);
+          this.serverless.cli.log(`Updated trigger ${triggerName}`)
         }, (err) => {
-          this.serverless.cli.log(`Failed to update trigger ${triggerName}!`);
-          throw err;
-        });
-    } 
-    this.serverless.cli.log(`Creating trigger ${triggerName}...`);
+          this.serverless.cli.log(`Failed to update trigger ${triggerName}!`)
+          throw err
+        })
+    }
+    this.serverless.cli.log(`Creating trigger ${triggerName}...`)
     return this.provider.createTrigger(serviceName, functionName, trigger, role)
       .then((newtrigger) => {
-        this.serverless.cli.log(`Created trigger ${triggerName}`);
-        this.triggerMap.set(triggerName, newtrigger);
+        this.serverless.cli.log(`Created trigger ${triggerName}`)
+        this.triggerMap.set(triggerName, newtrigger)
       }, (err) => {
-        this.serverless.cli.log(`Failed to create trigger ${triggerName}!`);
-        throw err;
-      });
-    
+        this.serverless.cli.log(`Failed to create trigger ${triggerName}!`)
+        throw err
+      })
+
   }
-};
+}

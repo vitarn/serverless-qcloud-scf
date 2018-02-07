@@ -1,19 +1,19 @@
-'use strict';
+'use strict'
 
-const BbPromise = require('bluebird');
-const path = require('path');
-const fse = require('fs-extra');
+const BbPromise = require('bluebird')
+const path = require('path')
+const fse = require('fs-extra')
 
 module.exports = {
-  cleanupServerlessDir() {
-    if (this.serverless.config.servicePath) {
-      const serverlessDirPath = path.join(this.serverless.config.servicePath, '.serverless');
+  async cleanupServerlessDir() {
+    const { serverless: { config: { servicePath } } } = this
 
-      if (fse.pathExistsSync(serverlessDirPath)) {
-        fse.removeSync(serverlessDirPath);
-      }
+    if (!servicePath) return
+
+    const serverlessDirPath = path.join(servicePath, '.serverless')
+
+    if (await fse.pathExists(serverlessDirPath)) {
+      return fse.remove(serverlessDirPath)
     }
-
-    return BbPromise.resolve();
   },
-};
+}

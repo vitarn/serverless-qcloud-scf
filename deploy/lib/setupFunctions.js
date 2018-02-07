@@ -7,8 +7,9 @@ const _ = require('lodash')
 const BbPromise = require('bluebird')
 
 module.exports = {
-  setupFunctions() {
+  async setupFunctions() {
     const { provider, templates, serverless: { cli } } = this
+    const api = provider.sdk.scf
     const bucket = templates.update.Resources.DeploymentBucket
     const functions = templates.update.Resources.CloudFunctions || []
     const cosBucket = provider.getCOSBucket(bucket)
@@ -19,7 +20,7 @@ module.exports = {
     }
 
     return BbPromise.all(functions.map(func => {
-      return provider.sdk.scf.requestAsync(_.assign(
+      return api.requestAsync(_.assign(
         _.pick(func, 'Region', 'functionName'),
         { Action: 'GetFunction' }
       ))
@@ -30,7 +31,7 @@ module.exports = {
         .then(res => {
           if (res.code !== 0) {
             cli.log(`Creating function "${func.functionName}"...`)
-            return provider.sdk.scf.requestAsync(_.assign(
+            return api.requestAsync(_.assign(
               {},
               func,
               {
@@ -54,7 +55,7 @@ module.exports = {
           } else {
             cli.log(`Updating function "${func.functionName}"...`)
 
-            return provider.sdk.scf.requestAsync(_.assign(
+            return api.requestAsync(_.assign(
               {},
               func,
               {
@@ -67,7 +68,6 @@ module.exports = {
                 cli.log('ERROR: Qcloud SCF UpdateFunction fail!')
                 throw err.error
               })
-              .then(res => console.log(res))
             }
         })
     }))

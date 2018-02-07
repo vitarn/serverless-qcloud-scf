@@ -1,20 +1,16 @@
-'use strict';
+'use strict'
 
-const path = require('path');
-const BbPromise = require('bluebird');
+const path = require('path')
 
 module.exports = {
-  loadTemplates() {
-    const createFilePath = path.join(this.serverless.config.servicePath,
-      '.serverless', 'configuration-template-create.json');
-    const updateFilePath = path.join(this.serverless.config.servicePath,
-      '.serverless', 'configuration-template-update.json');
+  async loadTemplates() {
+    const { serverless: { config, utils } } = this
+    const createFilePath = path.join(config.servicePath, '.serverless', 'configuration-template-create.json')
+    const updateFilePath = path.join(config.servicePath, '.serverless', 'configuration-template-update.json')
 
     this.templates = {
-      create: this.serverless.utils.readFileSync(createFilePath),
-      update: this.serverless.utils.readFileSync(updateFilePath)
-    };
-
-    return BbPromise.resolve();
+      create: utils.readFileSync(createFilePath),
+      update: utils.readFileSync(updateFilePath),
+    }
   }
-};
+}

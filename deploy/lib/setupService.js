@@ -8,201 +8,69 @@ const BbPromise = require('bluebird')
 
 module.exports = {
   setupService() {
-    // this.logProjectSpec = this.templates.create.Resources[this.provider.getLogProjectId()].Properties
-    // this.logStoreSpec = this.templates.create.Resources[this.provider.getLogStoreId()].Properties
-    // this.logIndexSpec = this.templates.create.Resources[this.provider.getLogIndexId()].Properties
-
-    // this.logProject = undefined
-    // this.logStore = undefined
-    // this.logIndex = undefined
-
     return BbPromise.bind(this)
-      // .then(this.createLogConfigIfNotExists)
-      // .then(this.setupExecRole)
-      // .then(() => {
-      //   // HACK: must wait for a while for the ram policy to take effect
-      //   return this.provider.sleep(this.provider.PROJECT_DELAY)
-      // })
-      // .then(this.checkForExistingService)
-      // .then(this.createServiceIfNotExists)
+      .then(this.createAPIGatewayIfNotExists) // Handle API Gateway first bcs we cannot deal same name services.
       .then(this.createBucketIfNotExists)
-      .then(this.createAPIGatewayIfNotExists)
   },
 
-  setupExecRole() {
-    const role = this.templates.create.Resources[this.provider.getExecRoleLogicalId()].Properties
-    return BbPromise.bind(this)
-      .then(() => this.setupRole(role))
-      .then((execRole) => this.execRole = execRole)
-  },
-
-  createLogConfigIfNotExists() {
-    return BbPromise.bind(this)
-      .then(this.createLogProjectIfNotExists)
-      .then(this.createLogStoreIfNotExists)
-      .then(this.createLogIndexIfNotExists)
-  },
-
-  createLogProjectIfNotExists() {
-    const projectName = this.logProjectSpec.projectName
-    return this.provider.getLogProject(projectName)
-      .then((logProject) => {
-        if (logProject) {
-          this.serverless.cli.log(`Log project ${projectName} already exists.`)
-          this.logProject = logProject
-          return
-        }
-
-        this.serverless.cli.log(`Creating log project ${projectName}...`)
-        return this.provider.createLogProject(projectName, this.logProjectSpec)
-          .then((createdProject) => {
-            this.serverless.cli.log(`Created log project ${projectName}`)
-            this.logProject = createdProject
-          })
-      })
-  },
-
-  createLogStoreIfNotExists() {
-    if (!this.logProject) {
-      return
-    }
-    const projectName = this.logProjectSpec.projectName
-    const storeName = this.logStoreSpec.storeName
-    return this.provider.getLogStore(projectName, storeName)
-      .then((logStore) => {
-        if (logStore) {
-          this.serverless.cli.log(`Log store ${projectName}/${storeName} already exists.`)
-          this.logStore = logStore
-          return
-        }
-
-        this.serverless.cli.log(`Creating log store ${projectName}/${storeName}...`)
-        return this.provider.createLogStore(projectName, storeName, this.logStoreSpec)
-          .then((createdStore) => {
-            this.serverless.cli.log(`Created log store ${projectName}/${storeName}`)
-            this.logStore = createdStore
-          })
-      })
-  },
-
-  createLogIndexIfNotExists() {
-    if (!this.logProject || !this.logStore) {
-      return
-    }
-    const projectName = this.logProjectSpec.projectName
-    const storeName = this.logStoreSpec.storeName
-    return this.provider.getLogIndex(projectName, storeName)
-      .then((logIndex) => {
-        if (logIndex) {
-          this.serverless.cli.log(`Log store ${projectName}/${storeName} already has an index.`)
-          this.logIndex = logIndex
-          return
-        }
-
-        this.serverless.cli.log(`Creating log index for ${projectName}/${storeName}...`)
-        return this.provider.createLogIndex(projectName, storeName, this.logIndexSpec)
-          .then((createdIndex) => {
-            this.serverless.cli.log(`Created log index for ${projectName}/${storeName}`)
-            this.logIndex = createdIndex
-          })
-      })
-  },
-
-  checkForExistingService() {
-    const service = this.templates.create.Resources[this.provider.getServiceId()].Properties
-
-    return this.provider.getService(service.name)
-  },
-
-  createServiceIfNotExists(foundService) {
-    const service = this.templates.create.Resources[this.provider.getServiceId()].Properties
-
-    if (foundService) {
-      this.serverless.cli.log(`Service ${service.name} already exists.`)
-      return BbPromise.resolve()
-    }
-
-    this.serverless.cli.log(`Creating service ${service.name}...`)
-    // TODO(joyeecheung): generate description
-    // TODO(joyeecheung): update service
-    const spec = Object.assign({
-      role: this.execRole.Arn
-    }, service)
-    return this.provider.createService(service.name, spec)
-      .then((createdService) => {
-        this.serverless.cli.log(`Created service ${service.name}`)
-      })
-  },
-
-  createBucketIfNotExists() {
+  async createBucketIfNotExists() {
     const { templates, provider, serverless: { cli } } = this
-
     const bucket = templates.create.Resources.DeploymentBucket
     const cosBucket = provider.getCOSBucket(bucket)
+    const api = provider.sdk.cos
 
-    return provider.sdk.cos.headBucketAsync(cosBucket)
-      .catch(err => {
-        cli.log(`ERROR: Qcloud headBucket fail`)
-        throw err.error
-      })
-      .then(headBucket => {
-        if (headBucket.BucketExist) { 
-          cli.log(`Bucket "${bucket.Bucket}" already exists`)
-          if (!headBucket.BucketAuth && cosBucket.ACL) {
-            cli.log(`Updating bucket "${bucket.Bucket}" ACL.`)
-            return provider.sdk.cos.putBucketAclAsync(cosBucket)
-          }
+    const headBucket = await api.headBucketAsync(cosBucket)
 
-          return
-        }
+    if (!headBucket.BucketExist) {
+      cli.log(`Creating bucket "${bucket.Bucket}"...`)
 
-        cli.log(`Creating bucket "${bucket.Bucket}"...`)
-        return provider.sdk.cos.putBucketAsync(cosBucket)
-      })
+      return api.putBucketAsync(cosBucket)
+    } else {
+      cli.log(`Bucket "${bucket.Bucket}" already exists`)
+
+      if (headBucket.BucketAuth || !cosBucket.ACL) return
+
+      cli.log(`Updating bucket "${bucket.Bucket}" ACL.`)
+      return api.putBucketAclAsync(cosBucket)
+    }
   },
 
-  createAPIGatewayIfNotExists() {
+  async createAPIGatewayIfNotExists() {
     const { templates, provider, serverless: { cli } } = this
     const { APIGateway } = templates.create.Resources
+    const api = provider.sdk.apigateway.setRegion(APIGateway.Region)
 
-    return provider.sdk.apigateway.setRegion(APIGateway.Region)
-      .describeServicesStatus({ searchName: APIGateway.serviceName })
-      .then(res => {
-        if (res.totalCount === 0) {
-          cli.log(`Creating api gateway service "${APIGateway.serviceName}"...`)
+    const services = await api.describeServicesStatus({
+      searchName: APIGateway.serviceName,
+      limit: 100,
+    })
+    const matchedServices = services.serviceStatusSet.filter(s => s.serviceName === APIGateway.serviceName)
 
-          return provider.sdk.apigateway.createService(APIGateway)
-            .catch(err => {
-              cli.log('ERROR: Qcloud API Gateway createService fail!')
-              console.log(err)
-              throw err
-            })
-            .then(res => {
-              _.assign(templates.update.Resources.APIGateway, res)
-            })
-        } else if (res.totalCount > 1) {
-          cli.log(`ERROR: Qcloud found ${res.totalCount} api gateway services named "${APIGateway.serviceName}" in "${APIGateway.Region}" region! Serverless cannot detect which one belongs here. Consider modify another service name in your Qcloud Console.`)
+    if (matchedServices.length > 1) {
+      cli.log(`ERROR: Qcloud returns ${res.totalCount} of "${APIGateway.serviceName}" api gateway services!
+        Serverless cannot detect which is the right one.
+        Consider modify another service name in your Qcloud Console.
+      `)
 
-          throw new Error(`Too many API Gateway services match name ${APIGateway.serviceName}`)
-        } else {
-          cli.log(`API Gateway service "${APIGateway.serviceName}" already exists`)
+      throw new Error(`Too many API Gateway services match name "${APIGateway.serviceName}"`)
+    } else if (matchedServices.length === 0) {
+      cli.log(`Creating api gateway service "${APIGateway.serviceName}"...`)
 
-          const ag = res.serviceStatusSet[0]
+      const res = await api.createService(APIGateway)
 
-          if (ag.serviceDesc !== APIGateway.serviceDesc || ag.protocol !== APIGateway.protocol) {
-            cli.log(`Updating api gateway service "${APIGateway.serviceName}"...`)
+      _.assign(templates.update.Resources.APIGateway, res)
+    } else {
+      cli.log(`API Gateway service "${APIGateway.serviceName}" already exists`)
 
-            return provider.sdk.apigateway.modifyService(_.assign({ serviceId: res.serviceStatusSet[0].serviceId }, APIGateway))
-              .catch(err => {
-                cli.log('ERROR: Qcloud API Gateway modifyService fail!')
-                console.log(err)
-                throw err
-              })
-              .then(res => {
-                _.assign(templates.update.Resources.APIGateway, res)
-              })
-          }
-        }
-      })
+      const ag = matchedServices[0]
+
+      _.assign(templates.update.Resources.APIGateway, ag)
+
+      if (ag.serviceDesc === APIGateway.serviceDesc && ag.protocol === APIGateway.protocol) return
+
+      cli.log(`Updating api gateway service "${APIGateway.serviceName}"...`)
+
+      const res = api.modifyService(_.assign({ serviceId: ag.serviceId }, APIGateway))
+    }
   },
 }
