@@ -147,20 +147,17 @@ module.exports = {
       })
       .then(headBucket => {
         if (headBucket.BucketExist) { 
-          cli.log(`Bucket ${bucket.Bucket} already exists.`)
+          cli.log(`Bucket "${bucket.Bucket}" already exists`)
           if (!headBucket.BucketAuth && cosBucket.ACL) {
-            cli.log(`Update bucket ${bucket.Bucket} ACL.`)
+            cli.log(`Updating bucket "${bucket.Bucket}" ACL.`)
             return provider.sdk.cos.putBucketAclAsync(cosBucket)
           }
 
           return
         }
 
-        cli.log(`Creating bucket ${bucket.Bucket}...`)
+        cli.log(`Creating bucket "${bucket.Bucket}"...`)
         return provider.sdk.cos.putBucketAsync(cosBucket)
-          .then(() => {
-            cli.log(`Created bucket ${bucket.Bucket}`)
-          })
       })
   },
 
@@ -168,15 +165,44 @@ module.exports = {
     const { templates, provider, serverless: { cli } } = this
     const { APIGateway } = templates.create.Resources
 
-    cli.log(`Creating api gateway ${APIGateway.serviceName}...`)
-    return provider.sdk.apigateway.createService(APIGateway)
-      .catch(err => {
-        cli.log('ERROR: Qcloud API Gateway createService fail')
-        console.log(err)
-        throw err
-      })
+    return provider.sdk.apigateway.setRegion(APIGateway.Region)
+      .describeServicesStatus({ searchName: APIGateway.serviceName })
       .then(res => {
-        _.assign(templates.update.Resources.APIGateway, res)
+        if (res.totalCount === 0) {
+          cli.log(`Creating api gateway service "${APIGateway.serviceName}"...`)
+
+          return provider.sdk.apigateway.createService(APIGateway)
+            .catch(err => {
+              cli.log('ERROR: Qcloud API Gateway createService fail!')
+              console.log(err)
+              throw err
+            })
+            .then(res => {
+              _.assign(templates.update.Resources.APIGateway, res)
+            })
+        } else if (res.totalCount > 1) {
+          cli.log(`ERROR: Qcloud found ${res.totalCount} api gateway services named "${APIGateway.serviceName}" in "${APIGateway.Region}" region! Serverless cannot detect which one belongs here. Consider modify another service name in your Qcloud Console.`)
+
+          throw new Error(`Too many API Gateway services match name ${APIGateway.serviceName}`)
+        } else {
+          cli.log(`API Gateway service "${APIGateway.serviceName}" already exists`)
+
+          const ag = res.serviceStatusSet[0]
+
+          if (ag.serviceDesc !== APIGateway.serviceDesc || ag.protocol !== APIGateway.protocol) {
+            cli.log(`Updating api gateway service "${APIGateway.serviceName}"...`)
+
+            return provider.sdk.apigateway.modifyService(_.assign({ serviceId: res.serviceStatusSet[0].serviceId }, APIGateway))
+              .catch(err => {
+                cli.log('ERROR: Qcloud API Gateway modifyService fail!')
+                console.log(err)
+                throw err
+              })
+              .then(res => {
+                _.assign(templates.update.Resources.APIGateway, res)
+              })
+          }
+        }
       })
   },
 }

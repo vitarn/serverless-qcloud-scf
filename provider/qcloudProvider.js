@@ -9,7 +9,7 @@ const BbPromise = require('bluebird')
 const _ = require('lodash')
 const QcloudAPI = require('qcloudapi-sdk')
 const QcloudCOS = require('cos-nodejs-sdk-v5')
-const QcloudAPIGateway = require('qcloud-apigateway')
+const { QcloudAPIGateway } = require('qcloud-apigateway')
 
 const naming = require('./lib/naming')
 

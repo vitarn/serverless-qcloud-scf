@@ -11,14 +11,11 @@ module.exports = {
 
     cosBucket.Body = fs.createReadStream(cosBucket.Body)
 
-    cli.log(`Uploading ${bucket.Key} to OSS bucket ${bucket.Bucket}...`)
+    cli.log(`Uploading "${bucket.Key}" to OSS bucket "${bucket.Bucket}"...`)
     return provider.sdk.cos.putObjectAsync(cosBucket)
       .catch(err => {
         cli.log('ERROR Qcloud COS putObject fail')
         throw err.error
-      })
-      .then(() => {
-        cli.log(`Uploaded ${bucket.Key} to OSS bucket ${bucket.Bucket}`)
       })
   },
 }

@@ -28,8 +28,31 @@ module.exports = {
           throw err.error
         })
         .then(res => {
-          if (res.code == 0) {
-            cli.log(`Update function ${func.functionName}...`)
+          if (res.code !== 0) {
+            cli.log(`Creating function "${func.functionName}"...`)
+            return provider.sdk.scf.requestAsync(_.assign(
+              {},
+              func,
+              {
+                Action: 'CreateFunction',
+                Region: func.Region,
+                codeObject,
+              }
+            ))
+              .catch(err => {
+                cli.log('ERROR: Qcloud SCF CreateFunction fail!')
+                throw err.error
+              })
+              .then(res => {
+                if (res.code != 0) {
+                  cli.log('ERROR: Qcloud SCF CreateFunction fail!')
+                  const error = new Error(res.message)
+                  error.name = res.codeDesc
+                  throw error
+                }
+              })
+          } else {
+            cli.log(`Updating function "${func.functionName}"...`)
 
             return provider.sdk.scf.requestAsync(_.assign(
               {},
@@ -41,34 +64,11 @@ module.exports = {
               }
             ))
               .catch(err => {
-                cli.log('ERROR: Qcloud SCF CreateFunction fail!')
+                cli.log('ERROR: Qcloud SCF UpdateFunction fail!')
                 throw err.error
               })
               .then(res => console.log(res))
-          }
-
-          cli.log(`Create function ${func.functionName}...`)
-          return provider.sdk.scf.requestAsync(_.assign(
-            {},
-            func,
-            {
-              Action: 'CreateFunction',
-              Region: func.Region,
-              codeObject,
             }
-          ))
-            .catch(err => {
-              cli.log('ERROR: Qcloud SCF CreateFunction fail!')
-              throw err.error
-            })
-            .then(res => {
-              if (res.code != 0) {
-                cli.log('ERROR: Qcloud SCF CreateFunction fail!')
-                const error = new Error(res.message)
-                error.name = res.codeDesc
-                throw error
-              }
-            })
         })
     }))
   }
