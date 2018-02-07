@@ -2163,6 +2163,12 @@ punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
+qcloud-apigateway@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/qcloud-apigateway/-/qcloud-apigateway-0.0.2.tgz#75d7879e2ceaa09adf48d172b223ca7a47d92cbf"
+  dependencies:
+    qcloudapi-sdk "^0.1.6"
+
 qcloudapi-sdk@^0.1.6:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/qcloudapi-sdk/-/qcloudapi-sdk-0.1.6.tgz#0d86d05588536f0a62dc49380d1564dc87faac69"

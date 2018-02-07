@@ -9,6 +9,7 @@ const BbPromise = require('bluebird')
 const _ = require('lodash')
 const QcloudAPI = require('qcloudapi-sdk')
 const QcloudCOS = require('cos-nodejs-sdk-v5')
+const QcloudAPIGateway = require('qcloud-apigateway')
 
 const naming = require('./lib/naming')
 
@@ -26,8 +27,8 @@ class QcloudProvider {
 
     this.sdk = {
       scf: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'scf' })),
-      apigateway: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'apigateway' })),
-      cos: BbPromise.promisifyAll(this.getQcloudCOS()),
+      apigateway: new QcloudAPIGateway(this.getQcloudOptions()),
+      cos: BbPromise.promisifyAll(new QcloudCOS(this.getQcloudOptions())),
       cls: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'cls' })),
 
       /**
@@ -51,10 +52,6 @@ class QcloudProvider {
 
   getQcloudAPI(options) {
     return new QcloudAPI(_.merge(this.getQcloudOptions(), options))
-  }
-
-  getQcloudCOS() {
-    return new QcloudCOS(this.getQcloudOptions())
   }
 
   getQcloudOptions() {
@@ -105,7 +102,7 @@ class QcloudProvider {
 
   getQcloudAPIRegion(region) {
     const regionMap = {
-      bj: 'ap-beijing',
+      bj: 'ap-beijing-1',
       sh: 'ap-shanghai',
       gz: 'ap-guangzhou',
     }

@@ -169,16 +169,14 @@ module.exports = {
     const { APIGateway } = templates.create.Resources
 
     cli.log(`Creating api gateway ${APIGateway.serviceName}...`)
-    return provider.sdk.apigateway.requestAsync(_.assign({}, APIGateway, {
-      Action: 'CreateService',
-    }))
+    return provider.sdk.apigateway.createService(APIGateway)
       .catch(err => {
-        cli.log('ERROR: Qcloud API Gateway CreateService fail')
+        cli.log('ERROR: Qcloud API Gateway createService fail')
         console.log(err)
         throw err
       })
       .then(res => {
-        console.log(res)
+        _.assign(templates.update.Resources.APIGateway, res)
       })
   },
 }
