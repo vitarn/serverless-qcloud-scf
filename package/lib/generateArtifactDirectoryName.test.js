@@ -17,7 +17,7 @@ describe('GenerateArtifactDirectoryName', () => {
     serverless.setProvider('qcloud', new QcloudProvider(serverless));
     const options = {
       stage: 'dev',
-      region: 'us-central1',
+      region: 'gz',
     };
     qcloudPackage = new QcloudPackage(serverless, options);
   });

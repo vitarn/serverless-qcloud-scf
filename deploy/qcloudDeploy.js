@@ -11,7 +11,6 @@ const setupService = require('./lib/setupService')
 const uploadArtifacts = require('./lib/uploadArtifacts')
 const setupFunctions = require('./lib/setupFunctions')
 const setupEvents = require('./lib/setupEvents')
-const setupRole = require('./lib/setupRole')
 
 class QcloudDeploy {
   constructor(serverless, options) {
@@ -27,8 +26,8 @@ class QcloudDeploy {
       setupService,
       uploadArtifacts,
       setupFunctions,
-      setupEvents,
-      setupRole)
+      setupEvents
+    )
 
     this.hooks = {
       'before:deploy:deploy': () => BbPromise.bind(this)
@@ -44,26 +43,6 @@ class QcloudDeploy {
         .then(this.log)
     }
   }
-
-  /*
-  Service Information
-  service: demo-sls-aws
-  stage: dev
-  region: cn-north-1
-  stack: demo-sls-aws-dev
-  api keys:
-    None
-  endpoints:
-    GET - https://9t4s3mxuu2.execute-api.cn-north-1.amazonaws.com.cn/dev/hello
-    DELETE - https://9t4s3mxuu2.execute-api.cn-north-1.amazonaws.com.cn/dev/bye
-  functions:
-    hello: demo-sls-aws-dev-hello
-    bye: demo-sls-aws-dev-bye
-
-  Stack Outputs
-  ServiceEndpoint: https://9t4s3mxuu2.execute-api.cn-north-1.amazonaws.com.cn/dev
-  ServerlessDeploymentBucketName: demo-sls-aws-dev-serverlessdeploymentbucket-eazgxazd0mi
-  */
 
   log() {
     const { templates, serverless: { cli } } = this

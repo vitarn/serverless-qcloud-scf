@@ -88,7 +88,9 @@ module.exports = {
       releaseDesc: 'Release by serverless'
     })
 
-    templates.update.Resources.APIGatewayRelease = { ...res, environmentName: envMap[stage] }
+    templates.update.Resources.APIGatewayRelease = _.assign({}, res, {
+      environmentName: envMap[stage],
+    })
   },
 
   createTriggersIfNeeded() {
