@@ -1,17 +1,8 @@
 {
   "Description": "The Qcloud template for this Serverless application",
   "Resources": {
-    "DeploymentBucket": {
-      "Bucket": "to-be-replaced-by-serverless",
-      "Region": "to-be-replaced-by-serverless"
-    },
-    "CloudFunctions": [
-      {
-        "functionName": "to-be-replaced-by-serverless",
-        "runtime": "Nodejs6.10",
-        "memorySize": 128,
-        "timeout": 3
-      }
-    ]
+    "DeploymentBucket": {},
+    "CloudFunctions": [],
+    "APIGatewayApis": []
   }
 }

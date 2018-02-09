@@ -44,9 +44,11 @@ module.exports = {
           },
       }
 
-      CloudFunctions.push(funcTemplate)
+      CloudFunctions.push(_.omitBy(funcTemplate, _.isUndefined))
 
       if (funcObject.events) {
+        this.validateEventsProperty(funcObject, funcTemplate.functionName)
+
         funcObject.events.forEach(event => {
           if (event.http) {
             this.compileAPIGateway(event.http, funcObject, funcTemplate)
@@ -67,8 +69,8 @@ module.exports = {
       serviceTimeout: funcTemplate.timeout,
       authRequired: http.private ? 'TRUE' : 'FALSE',
       requestConfig: {
-        method: _.toUpper(http.method),
-        path: `/${http.path}`,
+        method: _.toUpper(http.method || 'GET'),
+        path: `/${http.path || ''}`,
       },
       serviceScfFunctionName: funcObject.name,
       responseType: _.toUpper(http.responseType) || 'JSON',
@@ -85,6 +87,25 @@ module.exports = {
 
     cli.log(`Compiling api "${apiTemplate.apiName}"...`)
 
-    APIGatewayApis.push(apiTemplate)
+    APIGatewayApis.push(_.omitBy(apiTemplate, _.isUndefined))
+  },
+
+  validateEventsProperty(funcObject, functionName) {
+    const { serverless: { cli } } = this
+
+    if (!funcObject.events || funcObject.events.length === 0) {
+      cli.log(`WARN: Missing "events" property for function "${functionName}".`)
+    }
+
+    const supportedEvents = ['http', 'timer', 'cos', 'cmq']
+    
+    funcObject.events.forEach(event => {
+      const eventType = Object.keys(event).pop()
+
+      if (!supportedEvents.includes(eventType)) {
+        throw new Error(`Event type "${eventType}" of function "${functionName}" not supported.
+          supported event types are: ${supportedEvents.join(', ')}`)
+      }
+    })
   },
 }

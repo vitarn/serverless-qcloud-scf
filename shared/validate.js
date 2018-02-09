@@ -1,23 +1,19 @@
 'use strict'
 
-const BbPromise = require('bluebird')
 const _ = require('lodash')
 
 module.exports = {
-  validate() {
-    return BbPromise.bind(this)
-      .then(this.validateServicePath)
-      .then(this.validateServiceName)
-      .then(this.validateFunctionNames)
-      .then(this.validateHandlers)
+  async validate() {
+    this.validateServicePath()
+    this.validateServiceName()
+    this.validateFunctionNames()
+    this.validateHandlers()
   },
 
   validateServicePath() {
     if (!this.serverless.config.servicePath) {
       throw new Error('This command can only be run inside a service directory')
     }
-
-    return BbPromise.resolve()
   },
 
   validateServiceName() {
@@ -34,8 +30,6 @@ module.exports = {
     if (!/^.[\w-]*$/.test(name)) {
       throw new Error(`Your service name "${name}" should consist only of "a-z, A-Z, 0-9, -, _"`)
     }
-
-    return BbPromise.resolve()
   },
   
   validateFunctionNames() {
@@ -52,8 +46,6 @@ module.exports = {
         throw new Error(`Your function name "${funcKey}" should consist only of "a-z, A-Z, 0-9, -, _"`)
       }
     })
-
-    return BbPromise.resolve()
   },
 
   validateHandlers() {
@@ -67,7 +59,5 @@ module.exports = {
         throw new Error(errorMessage)
       }
     })
-
-    return BbPromise.resolve()
   },
 }

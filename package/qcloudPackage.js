@@ -1,7 +1,5 @@
 'use strict'
 
-const BbPromise = require('bluebird')
-
 const cleanupServerlessDir = require('./lib/cleanupServerlessDir')
 const validate = require('../shared/validate')
 const utils = require('../shared/utils')
@@ -28,26 +26,32 @@ class QcloudPackage {
       compileFunctions,
       generateArtifactDirectoryName,
       mergeServiceResources,
-      saveUpdateTemplateFile)
+      saveUpdateTemplateFile
+    )
 
     this.hooks = {
-      'package:cleanup': () => BbPromise.bind(this)
-        .then(this.cleanupServerlessDir),
+      'package:cleanup': async () => {
+        await this.cleanupServerlessDir()
+      },
 
-      'before:package:initialize': () => BbPromise.bind(this)
-        .then(this.validate),
+      'before:package:initialize': async () => {
+        await this.validate()
+      },
 
-      'package:initialize': () => BbPromise.bind(this)
-        .then(this.prepareDeployment)
-        .then(this.saveCreateTemplateFile),
+      'package:initialize': async () => {
+        await this.prepareDeployment()
+        await this.saveCreateTemplateFile()
+      },
 
-      'package:compileFunctions': () => BbPromise.bind(this)
-        .then(this.compileFunctions),
+      'package:compileFunctions': async () => {
+        await this.compileFunctions()
+      },
 
-      'package:finalize': () => BbPromise.bind(this)
-        .then(this.generateArtifactDirectoryName)
-        .then(this.mergeServiceResources)
-        .then(this.saveUpdateTemplateFile),
+      'package:finalize': async () => {
+        await this.generateArtifactDirectoryName()
+        await this.mergeServiceResources()
+        await this.saveUpdateTemplateFile()
+      },
     }
   }
 }

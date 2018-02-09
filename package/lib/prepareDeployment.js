@@ -19,20 +19,23 @@ module.exports = {
         'core-configuration-template.json'
       )
     )
+    const Resources = deploymentTemplate.Resources = deploymentTemplate.Resources || {}
+    const DeploymentBucket = Resources.DeploymentBucket = Resources.DeploymentBucket || {}
+    const CloudFunctions = Resources.CloudFunctions = Resources.CloudFunctions || []
+    const APIGateway = Resources.APIGateway = Resources.APIGateway || {}
+    const APIGatewayApis = Resources.APIGatewayApis = Resources.APIGatewayApis || []
 
-    const { DeploymentBucket } = deploymentTemplate.Resources
-    const { region } = service.provider
+    const region = _.get(options, 'region')
+      || _.get(service, 'provider.region')
+      || 'gz'
     const name = _.get(service, 'provider.deploymentBucket')
       || `${provider.naming.deploymentBucketPrefix}${region}`
 
-    _.assign(DeploymentBucket, {
+    Object.assign(DeploymentBucket, {
       Bucket: name,
       Region: region,
       ACL: 'public-read',
     })
-
-    deploymentTemplate.Resources.CloudFunctions = []
-    deploymentTemplate.Resources.APIGatewayApis = []
 
     const functionHasHTTP = service.getAllFunctions().some((functionName) => {
       const funcObject = service.getFunction(functionName)

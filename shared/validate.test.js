@@ -1,7 +1,6 @@
 'use strict'
 
 const sinon = require('sinon')
-const BbPromise = require('bluebird')
 
 const validate = require('./validate')
 const QcloudProvider = require('../provider/qcloudProvider')
@@ -32,13 +31,13 @@ describe('Validate', () => {
 
     beforeEach(() => {
       validateServicePathStub = sinon.stub(qcloudCommand, 'validateServicePath')
-        .returns(BbPromise.resolve())
+        .returns()
       validateServiceNameStub = sinon.stub(qcloudCommand, 'validateServiceName')
-        .returns(BbPromise.resolve())
+        .returns()
       validateFunctionNamesStub = sinon.stub(qcloudCommand, 'validateFunctionNames')
-        .returns(BbPromise.resolve())
+        .returns()
       validateHandlersStub = sinon.stub(qcloudCommand, 'validateHandlers')
-        .returns(BbPromise.resolve())
+        .returns()
     })
 
     afterEach(() => {

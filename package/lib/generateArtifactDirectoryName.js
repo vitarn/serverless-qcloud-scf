@@ -2,11 +2,10 @@
 
 const path = require('path')
 const fs = require('fs')
-const BbPromise = require('bluebird')
 const _ = require('lodash')
 
 module.exports = {
-  generateArtifactDirectoryName() {
+  async generateArtifactDirectoryName() {
     const { options, serverless: { service } } = this
     const date = new Date()
     const serviceWithStage = `${service.service}/${options.stage || 'dev'}`
@@ -22,7 +21,5 @@ module.exports = {
         ContentLength: fs.statSync(service.package.artifact).size,
       }
     )
-
-    return BbPromise.resolve()
   },
 }

@@ -24,7 +24,7 @@ describe('CleanupServerlessDir', () => {
     serverless.setProvider('qcloud', new QcloudProvider(serverless))
     const options = {
       stage: 'dev',
-      region: 'gz',
+      region: 'sh',
     }
     qcloudPackage = new QcloudPackage(serverless, options)
     pathExistsStub = sinon.stub(fse, 'pathExists')
@@ -37,41 +37,41 @@ describe('CleanupServerlessDir', () => {
   })
 
   describe('#cleanupServerlessDir()', () => {
-    it('should resolve if no servicePath is given', () => {
+    it('should resolve if no servicePath is given', async () => {
       qcloudPackage.serverless.config.servicePath = false
 
       pathExistsStub.returns()
 
-      return qcloudPackage.cleanupServerlessDir().then(() => {
-        expect(pathExistsStub.calledOnce).toEqual(false)
-        expect(removeStub.calledOnce).toEqual(false)
-      })
+      await qcloudPackage.cleanupServerlessDir()
+
+      expect(pathExistsStub.calledOnce).toEqual(false)
+      expect(removeStub.calledOnce).toEqual(false)
     })
 
-    it('should remove the .serverless directory if it exists', () => {
+    it('should remove the .serverless directory if it exists', async () => {
       const serviceName = qcloudPackage.serverless.service.service
       qcloudPackage.serverless.config.servicePath = serviceName
       const serverlessDirPath = path.join(serviceName, '.serverless')
 
       pathExistsStub.returns(true)
 
-      return qcloudPackage.cleanupServerlessDir().then(() => {
-        expect(pathExistsStub.calledWithExactly(serverlessDirPath)).toEqual(true)
-        expect(removeStub.calledWithExactly(serverlessDirPath)).toEqual(true)
-      })
+      await qcloudPackage.cleanupServerlessDir()
+
+      expect(pathExistsStub.calledWithExactly(serverlessDirPath)).toEqual(true)
+      expect(removeStub.calledWithExactly(serverlessDirPath)).toEqual(true)
     })
 
-    it('should not remove the .serverless directory if does not exist', () => {
+    it('should not remove the .serverless directory if does not exist', async () => {
       const serviceName = qcloudPackage.serverless.service.service
       qcloudPackage.serverless.config.servicePath = serviceName
       const serverlessDirPath = path.join(serviceName, '.serverless')
 
       pathExistsStub.returns(false)
 
-      return qcloudPackage.cleanupServerlessDir().then(() => {
-        expect(pathExistsStub.calledWithExactly(serverlessDirPath)).toEqual(true)
-        expect(removeStub.calledWithExactly(serverlessDirPath)).toEqual(false)
-      })
+      await qcloudPackage.cleanupServerlessDir()
+
+      expect(pathExistsStub.calledWithExactly(serverlessDirPath)).toEqual(true)
+      expect(removeStub.calledWithExactly(serverlessDirPath)).toEqual(false)
     })
   })
 })
