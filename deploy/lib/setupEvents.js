@@ -13,11 +13,8 @@ module.exports = {
     this.apis = templates.update.Resources.APIGatewayApis
     this.triggers = []
 
-    return BbPromise.bind(this)
-      // .then(this.setupInvokeRole)
-      .then(this.createApisIfNeeded)
-      .then(this.releaseAPIGateway)
-    // .then(this.createTriggersIfNeeded)
+    await this.createApisIfNeeded()
+    await this.releaseAPIGateway()
   },
 
   async createApisIfNeeded() {
@@ -57,12 +54,6 @@ module.exports = {
         const res = await apigateway.modifyApi(api)
       }
     }))
-
-    // return BbPromise.bind(this)
-    //   .then(this.createApiGroupIfNotExists)
-    //   .then(this.checkExistingApis)
-    //   .then(this.createOrUpdateApis)
-    //   .then(this.deployApis)
   },
 
   async releaseAPIGateway() {
@@ -78,7 +69,7 @@ module.exports = {
     // 'test' | 'prepub' | 'release'
     const envMap = {
       dev: 'test',
-      test: 'prepub',
+      pre: 'prepub',
       prod: 'release'
     }
 

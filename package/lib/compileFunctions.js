@@ -63,6 +63,9 @@ module.exports = {
     const { APIGatewayApis } = service.provider.compiledConfigurationTemplate.Resources
 
     const apiTemplate = {
+      Region: _.get(options, 'region')
+        || _.get(service, 'provider.region')
+        || 'gz',
       apiName: http.name || funcObject.name,
       apiDesc: http.description,
       serviceType: 'SCF',

@@ -163,6 +163,7 @@ describe('CompileFunctions', () => {
           }],
         APIGatewayApis:
           [{
+            Region: 'sh',
             apiName: 'my-service-dev-func1',
             serviceType: 'SCF',
             serviceTimeout: 3,

@@ -1,6 +1,5 @@
 'use strict'
 
-const BbPromise = require('bluebird')
 const path = require('path')
 const chalk = require('chalk')
 
@@ -30,17 +29,19 @@ class QcloudDeploy {
     )
 
     this.hooks = {
-      'before:deploy:deploy': () => BbPromise.bind(this)
-        .then(this.validate)
-        .then(this.setDefaults)
-        .then(this.loadTemplates),
+      'before:deploy:deploy': async () => {
+        await this.validate()
+        await this.setDefaults()
+        await this.loadTemplates()
+      },
 
-      'deploy:deploy': () => BbPromise.bind(this)
-        .then(this.setupService)
-        .then(this.uploadArtifacts)
-        .then(this.setupFunctions)
-        .then(this.setupEvents)
-        .then(this.log)
+      'deploy:deploy': async () => {
+        await this.setupService()
+        await this.uploadArtifacts()
+        await this.setupFunctions()
+        await this.setupEvents()
+        await this.log()
+      },
     }
   }
 

@@ -2,16 +2,17 @@
 
 'use strict'
 
-const fs = require('fs')
 const path = require('path')
+const sinon = require('sinon')
 
 const QcloudProvider = require('../../provider/qcloudProvider')
 const QcloudDeploy = require('../qcloudDeploy')
 const Serverless = require('../../test/serverless')
 
-xdescribe('UploadArtifacts', () => {
+describe('UploadArtifacts', () => {
   let serverless
   let qcloudDeploy
+  let readFileSyncStub
   const servicePath = path.join(__dirname, '..', '..', 'test')
 
   beforeEach(() => {
@@ -24,25 +25,22 @@ xdescribe('UploadArtifacts', () => {
     serverless.config = { servicePath }
     const options = {
       stage: 'dev',
-      region: 'cn-shanghai',
+      region: 'sh',
     }
     serverless.setProvider('qcloud', new QcloudProvider(serverless, options))
     qcloudDeploy = new QcloudDeploy(serverless, options)
+    readFileSyncStub = sinon.stub(serverless.utils, 'readFileSync')
+  })
+
+  afterEach(() => {
+    serverless.utils.readFileSync.restore()
   })
 
   describe('#loadTemplates()', () => {
-    it('should make the templates accessible', () => {
-      const create = fs.readFileSync(
-        path.join(servicePath, '.serverless', 'configuration-template-create.json'), 'utf8')
-      const update = fs.readFileSync(
-        path.join(servicePath, '.serverless', 'configuration-template-update.json'), 'utf8')
-      const templates = {
-        create: JSON.parse(create),
-        update: JSON.parse(update)
-      }
-      return qcloudDeploy.loadTemplates().then(() => {
-        expect(qcloudDeploy.templates).toEqual(templates)
-      })
+    it('should make the templates accessible', async () => {
+      await qcloudDeploy.loadTemplates()
+
+      expect(readFileSyncStub.calledTwice).toEqual(true)
     })
   })
 })

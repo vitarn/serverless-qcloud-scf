@@ -1,7 +1,6 @@
 'use strict'
 
 const sinon = require('sinon')
-const BbPromise = require('bluebird')
 
 const QcloudProvider = require('../provider/qcloudProvider')
 const QcloudPackage = require('./qcloudPackage')
@@ -38,8 +37,7 @@ describe('QcloudPackage', () => {
     describe('hooks', () => {
       let cleanupServerlessDirStub
       let validateStub
-      // let setDefaultsStub
-      let setDeploymentBucketNameStub
+      let setDefaultsStub
       let prepareDeploymentStub
       let saveCreateTemplateFileStub
       let generateArtifactDirectoryNameStub
@@ -49,32 +47,29 @@ describe('QcloudPackage', () => {
 
       beforeEach(() => {
         cleanupServerlessDirStub = sinon.stub(qcloudPackage, 'cleanupServerlessDir')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
         validateStub = sinon.stub(qcloudPackage, 'validate')
-          .returns(BbPromise.resolve())
-        // setDefaultsStub = sinon.stub(qcloudPackage, 'setDefaults')
-          // .returns(BbPromise.resolve())
-        setDeploymentBucketNameStub = sinon.stub(qcloudPackage, 'setDeploymentBucketName')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
+        setDefaultsStub = sinon.stub(qcloudPackage, 'setDefaults')
+          .returns(Promise.resolve())
         prepareDeploymentStub = sinon.stub(qcloudPackage, 'prepareDeployment')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
         saveCreateTemplateFileStub = sinon.stub(qcloudPackage, 'saveCreateTemplateFile')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
         generateArtifactDirectoryNameStub = sinon.stub(qcloudPackage, 'generateArtifactDirectoryName')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
         compileFunctionsStub = sinon.stub(qcloudPackage, 'compileFunctions')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
         mergeServiceResourcesStub = sinon.stub(qcloudPackage, 'mergeServiceResources')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
         saveUpdateTemplateFileStub = sinon.stub(qcloudPackage, 'saveUpdateTemplateFile')
-          .returns(BbPromise.resolve())
+          .returns(Promise.resolve())
       })
 
       afterEach(() => {
         qcloudPackage.cleanupServerlessDir.restore()
         qcloudPackage.validate.restore()
-        // qcloudPackage.setDefaults.restore()
-        qcloudPackage.setDeploymentBucketName.restore()
+        qcloudPackage.setDefaults.restore()
         qcloudPackage.prepareDeployment.restore()
         qcloudPackage.saveCreateTemplateFile.restore()
         qcloudPackage.generateArtifactDirectoryName.restore()
@@ -88,22 +83,16 @@ describe('QcloudPackage', () => {
           expect(cleanupServerlessDirStub.calledOnce).toEqual(true)
         }))
 
-      // it('should run "before:package:initialize" promise chain', () => qcloudPackage
-      //   .hooks['before:package:initialize']().then(() => {
-      //     expect(validateStub.calledOnce).toEqual(true)
-      //     expect(setDefaultsStub.calledAfter(validateStub)).toEqual(true)
-      //   }))
+      it('should run "before:package:initialize" promise chain', () => qcloudPackage
+        .hooks['before:package:initialize']().then(() => {
+          expect(validateStub.calledOnce).toEqual(true)
+          // expect(setDefaultsStub.calledAfter(validateStub)).toEqual(true)
+        }))
 
       it('should run "package:initialize" promise chain', () => qcloudPackage
         .hooks['package:initialize']().then(() => {
-          expect(setDeploymentBucketNameStub.calledOnce).toEqual(true)
-          expect(prepareDeploymentStub.calledAfter(setDeploymentBucketNameStub)).toEqual(true)
+          expect(prepareDeploymentStub.calledOnce).toEqual(true)
           expect(saveCreateTemplateFileStub.calledAfter(prepareDeploymentStub)).toEqual(true)
-        }))
-
-      it('should run "before:package:compileFunctions" promise chain', () => qcloudPackage
-        .hooks['before:package:compileFunctions']().then(() => {
-          expect(generateArtifactDirectoryNameStub.calledOnce).toEqual(true)
         }))
 
       it('should run "package:compileFunctions" promise chain', () => qcloudPackage
@@ -113,7 +102,8 @@ describe('QcloudPackage', () => {
 
       it('should run "package:finalize" promise chain', () => qcloudPackage
         .hooks['package:finalize']().then(() => {
-          expect(mergeServiceResourcesStub.calledOnce).toEqual(true)
+          expect(generateArtifactDirectoryNameStub.calledOnce).toEqual(true)
+          expect(mergeServiceResourcesStub.calledAfter(generateArtifactDirectoryNameStub)).toEqual(true)
           expect(saveUpdateTemplateFileStub.calledAfter(mergeServiceResourcesStub)).toEqual(true)
         }))
     })
