@@ -39,9 +39,7 @@ module.exports = {
   },
   
   validateFunctionNames() {
-    const functions = this.serverless.service.functions
-
-    _.forEach(functions, (funcObject, funcKey) => {
+    _.forEach(this.serverless.service.functions, (funcObject, funcKey) => {
       if (funcKey.length > 60) {
         throw new Error(`Your function name "${funcKey}" should not longer than 60 characters.`)
       }
@@ -54,13 +52,12 @@ module.exports = {
         throw new Error(`Your function name "${funcKey}" should consist only of "a-z, A-Z, 0-9, -, _"`)
       }
     })
+
     return BbPromise.resolve()
   },
 
   validateHandlers() {
-    const functions = this.serverless.service.functions
-
-    _.forEach(functions, (funcVal, funcKey) => {
+    _.forEach(this.serverless.service.functions, (funcObject, funcKey) => {
       if (!funcObject.handler) {
         const errorMessage = [
           `Missing "handler" property for function "${funcKey}".`,
@@ -69,18 +66,8 @@ module.exports = {
         ].join('')
         throw new Error(errorMessage)
       }
-
-      // if (funcVal.handler.includes('/') || funcVal.handler.includes('.')) {
-      //   const errorMessage = [
-      //     `The "handler" property for the function "${funcKey}" is invalid.`,
-      //     ' Handlers should be plain strings referencing only the exported function name',
-      //     ' without characters such as "." or "/" (so e.g. "http" instead of "index.http").',
-      //     ' Do you want to nest your functions code in a subdirectory?',
-      //     ' Google solves this by utilizing the "main" config in the projects package.json file.',
-      //     ' Please check the docs for more info.',
-      //   ].join('')
-      //   throw new Error(errorMessage)
-      // }
     })
+
+    return BbPromise.resolve()
   },
 }

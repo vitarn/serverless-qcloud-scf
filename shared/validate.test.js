@@ -27,12 +27,15 @@ describe('Validate', () => {
   describe('#validate()', () => {
     let validateServicePathStub
     let validateServiceNameStub
+    let validateFunctionNamesStub
     let validateHandlersStub
 
     beforeEach(() => {
       validateServicePathStub = sinon.stub(qcloudCommand, 'validateServicePath')
         .returns(BbPromise.resolve())
       validateServiceNameStub = sinon.stub(qcloudCommand, 'validateServiceName')
+        .returns(BbPromise.resolve())
+      validateFunctionNamesStub = sinon.stub(qcloudCommand, 'validateFunctionNames')
         .returns(BbPromise.resolve())
       validateHandlersStub = sinon.stub(qcloudCommand, 'validateHandlers')
         .returns(BbPromise.resolve())
@@ -41,6 +44,7 @@ describe('Validate', () => {
     afterEach(() => {
       qcloudCommand.validateServicePath.restore()
       qcloudCommand.validateServiceName.restore()
+      qcloudCommand.validateFunctionNames.restore()
       qcloudCommand.validateHandlers.restore()
     })
 
@@ -48,7 +52,8 @@ describe('Validate', () => {
       .validate().then(() => {
         expect(validateServicePathStub.calledOnce).toEqual(true)
         expect(validateServiceNameStub.calledAfter(validateServicePathStub))
-        expect(validateHandlersStub.calledAfter(validateServiceNameStub))
+        expect(validateFunctionNamesStub.calledAfter(validateServiceNameStub))
+        expect(validateHandlersStub.calledAfter(validateFunctionNamesStub))
       }))
   })
 

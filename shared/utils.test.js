@@ -5,7 +5,7 @@ const QcloudProvider = require('../provider/qcloudProvider')
 const Serverless = require('../test/serverless')
 const QcloudCommand = require('../test/qcloudCommand')
 
-xdescribe('Utils', () => {
+describe('Utils', () => {
   let serverless
   let qcloudCommand
 
