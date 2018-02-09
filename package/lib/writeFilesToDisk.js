@@ -4,26 +4,20 @@
 
 const path = require('path')
 
-const BbPromise = require('bluebird')
-
 module.exports = {
-  saveCreateTemplateFile() {
+  async saveCreateTemplateFile() {
     const filePath = path.join(this.serverless.config.servicePath,
       '.serverless', 'configuration-template-create.json')
 
     this.serverless.utils.writeFileSync(filePath,
       this.serverless.service.provider.compiledConfigurationTemplate)
-
-    return BbPromise.resolve()
   },
 
-  saveUpdateTemplateFile() {
+  async saveUpdateTemplateFile() {
     const filePath = path.join(this.serverless.config.servicePath,
       '.serverless', 'configuration-template-update.json')
 
     this.serverless.utils.writeFileSync(filePath,
       this.serverless.service.provider.compiledConfigurationTemplate)
-
-    return BbPromise.resolve()
   },
 }
