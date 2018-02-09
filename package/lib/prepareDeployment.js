@@ -43,7 +43,7 @@ module.exports = {
       return funcObject.events && funcObject.events.some(event => event.http)
     })
 
-    if (functionHasHTTP && !deploymentTemplate.Resources.APIGateway) {
+    if (functionHasHTTP && _.isEmpty(deploymentTemplate.Resources.APIGateway)) {
       deploymentTemplate.Resources.APIGateway = {
         Region: _.get(options, 'region')
           || _.get(service, 'provider.region')
