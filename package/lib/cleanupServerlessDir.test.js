@@ -12,8 +12,8 @@ const Serverless = require('../../test/serverless')
 describe('CleanupServerlessDir', () => {
   let serverless
   let qcloudPackage
-  let pathExistsSyncStub
-  let removeSyncStub
+  let pathExistsStub
+  let removeStub
 
   beforeEach(() => {
     serverless = new Serverless()
@@ -24,27 +24,27 @@ describe('CleanupServerlessDir', () => {
     serverless.setProvider('qcloud', new QcloudProvider(serverless))
     const options = {
       stage: 'dev',
-      region: 'us-central1',
+      region: 'gz',
     }
     qcloudPackage = new QcloudPackage(serverless, options)
-    pathExistsSyncStub = sinon.stub(fse, 'pathExistsSync')
-    removeSyncStub = sinon.stub(fse, 'removeSync').returns()
+    pathExistsStub = sinon.stub(fse, 'pathExists')
+    removeStub = sinon.stub(fse, 'remove').returns()
   })
 
   afterEach(() => {
-    fse.pathExistsSync.restore()
-    fse.removeSync.restore()
+    fse.pathExists.restore()
+    fse.remove.restore()
   })
 
   describe('#cleanupServerlessDir()', () => {
     it('should resolve if no servicePath is given', () => {
       qcloudPackage.serverless.config.servicePath = false
 
-      pathExistsSyncStub.returns()
+      pathExistsStub.returns()
 
       return qcloudPackage.cleanupServerlessDir().then(() => {
-        expect(pathExistsSyncStub.calledOnce).toEqual(false)
-        expect(removeSyncStub.calledOnce).toEqual(false)
+        expect(pathExistsStub.calledOnce).toEqual(false)
+        expect(removeStub.calledOnce).toEqual(false)
       })
     })
 
@@ -53,11 +53,11 @@ describe('CleanupServerlessDir', () => {
       qcloudPackage.serverless.config.servicePath = serviceName
       const serverlessDirPath = path.join(serviceName, '.serverless')
 
-      pathExistsSyncStub.returns(true)
+      pathExistsStub.returns(true)
 
       return qcloudPackage.cleanupServerlessDir().then(() => {
-        expect(pathExistsSyncStub.calledWithExactly(serverlessDirPath)).toEqual(true)
-        expect(removeSyncStub.calledWithExactly(serverlessDirPath)).toEqual(true)
+        expect(pathExistsStub.calledWithExactly(serverlessDirPath)).toEqual(true)
+        expect(removeStub.calledWithExactly(serverlessDirPath)).toEqual(true)
       })
     })
 
@@ -66,11 +66,11 @@ describe('CleanupServerlessDir', () => {
       qcloudPackage.serverless.config.servicePath = serviceName
       const serverlessDirPath = path.join(serviceName, '.serverless')
 
-      pathExistsSyncStub.returns(false)
+      pathExistsStub.returns(false)
 
       return qcloudPackage.cleanupServerlessDir().then(() => {
-        expect(pathExistsSyncStub.calledWithExactly(serverlessDirPath)).toEqual(true)
-        expect(removeSyncStub.calledWithExactly(serverlessDirPath)).toEqual(false)
+        expect(pathExistsStub.calledWithExactly(serverlessDirPath)).toEqual(true)
+        expect(removeStub.calledWithExactly(serverlessDirPath)).toEqual(false)
       })
     })
   })
