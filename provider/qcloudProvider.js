@@ -27,8 +27,8 @@ class QcloudProvider {
 
     this.sdk = {
       scf: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'scf' })),
-      apigateway: new QcloudAPIGateway(this.getQcloudOptions()),
-      cos: BbPromise.promisifyAll(new QcloudCOS(this.getQcloudOptions())),
+      apigateway: new QcloudAPIGateway(this.qcloudOptions),
+      cos: BbPromise.promisifyAll(new QcloudCOS(this.qcloudOptions)),
       cls: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'cls' })),
 
       /**
@@ -51,10 +51,10 @@ class QcloudProvider {
   }
 
   getQcloudAPI(options) {
-    return new QcloudAPI(_.merge(this.getQcloudOptions(), options))
+    return new QcloudAPI(_.merge({}, this.qcloudOptions, options))
   }
 
-  getQcloudOptions() {
+  get qcloudOptions() {
     if (this._qcloudOptions) return this._qcloudOptions
 
     const { QCLOUD_SECRETID: SecretId, QCLOUD_SECRETKEY: SecretKey } = process.env
@@ -67,14 +67,12 @@ class QcloudProvider {
       return this._qcloudOptions
     }
 
-    const credentials = this.getQcloudCredentials()
-
-    this._qcloudOptions = credentials
+    this._qcloudOptions = this.credentials
 
     return this._qcloudOptions
   }
 
-  getQcloudCredentials() {
+  get credentials() {
     let credentials = this.serverless.service.provider.credentials
     const credParts = credentials.split(path.sep)
 
@@ -92,10 +90,13 @@ class QcloudProvider {
     }
   }
 
-  getQcloudAppID() {
+  get appId() {
     const { QCLOUD_APPID: appid } = process.env
 
-    if (!appid) this.serverless.cli.log(`WARN: Missing env "QCLOUD_APPID". It's required params for Qcloud COS bucket name.`)
+    if (!appid) {
+      this.serverless.cli.log(`WARN: Missing env "QCLOUD_APPID". It's required params for Qcloud COS bucket name.`)
+      return ''
+    }
 
     return appid
   }
@@ -116,9 +117,13 @@ class QcloudProvider {
 
   getCOSBucket(bucket) {
     return Object.assign({}, bucket, {
-      Bucket: `${bucket.Bucket}-${this.getQcloudAppID()}`,
+      Bucket: `${bucket.Bucket}-${this.appId}`,
       Region: this.getQcloudAPIRegion(bucket.Region),
     })
+  }
+
+  get deploymentBucketName() {
+    
   }
 }
 
