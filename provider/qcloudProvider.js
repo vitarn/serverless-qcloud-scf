@@ -18,12 +18,12 @@ class QcloudProvider {
     return naming.providerName
   }
 
-  constructor(serverless) {
-    this.serverless = serverless
+  constructor(serverless, options) {
+    this.naming = { provider: this }
+    this.options = options
     this.provider = this // only load plugin in a Qcloud service context
+    this.serverless = serverless
     this.serverless.setProvider(naming.providerName, this)
-
-    this.naming = naming
 
     this.sdk = {
       scf: BbPromise.promisifyAll(this.getQcloudAPI({ serviceType: 'scf' })),
@@ -37,6 +37,8 @@ class QcloudProvider {
        */
       coc: null,
     }
+
+    Object.assign(this.naming, naming)
   }
 
   isServiceSupported(service) {
@@ -122,8 +124,13 @@ class QcloudProvider {
     })
   }
 
-  get deploymentBucketName() {
-    
+  get region() {
+    const defaultRegion = 'gz'
+
+    return _.get(this, 'options.region')
+      || _.get(this, 'serverless.config.region')
+      || _.get(this, 'serverless.service.provider.region')
+      || defaultRegion
   }
 }
 

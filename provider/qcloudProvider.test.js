@@ -82,4 +82,31 @@ describe('QcloudProvider', () => {
       }).toThrow(Error)
     })
   })
+
+  describe('#region', () => {
+    it('should prefer options over config or provider', () => {
+      qcloudProvider.options = { region: 'optionsRegion' }
+      serverless.config = { region: 'configRegion' }
+      serverless.service.provider = { region: 'providerRegion' }
+
+      expect(qcloudProvider.region).toEqual('optionsRegion')
+    })
+
+    it('should prefer config over provider in lieu of options', () => {
+      serverless.config = { region: 'configRegion' }
+      serverless.service.provider = { region: 'providerRegion' }
+
+      expect(qcloudProvider.region).toEqual('configRegion')
+    })
+
+    it('should use provider in lieu of options and config', () => {
+      serverless.service.provider = { region: 'providerRegion' }
+
+      expect(qcloudProvider.region).toEqual('providerRegion')
+    })
+
+    it('should use the default gz in lieu of options, config, and provider', () => {
+      expect(qcloudProvider.region).toEqual('gz')
+    })
+  })
 })

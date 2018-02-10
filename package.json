@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "jest --maxWorkers=5",
-    "testing": "jest --watch --maxWorkers=5",
+    "testing": "jest --watch",
     "coverage": "jest --maxWorkers=5 --coverage",
     "lint": "eslint . --cache"
   },
@@ -30,7 +30,7 @@
   "dependencies": {
     "async": "^2.6.0",
     "bluebird": "^3.5.1",
-    "chalk": "^2.4.0",
+    "chalk": "^2.3.0",
     "cos-nodejs-sdk-v5": "^2.2.6",
     "fs-extra": "^5.0.0",
     "ini": "^1.3.5",
@@ -43,7 +43,7 @@
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.2.0",
-    "jest": "^22.2.1",
+    "jest": "^22.2.2",
     "sinon": "^4.2.2"
   }
 }

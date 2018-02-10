@@ -20,10 +20,10 @@ xdescribe('EmptyDeploymentBucket', () => {
         deploymentBucketName: 'sls-my-service-dev-12345678',
       },
     }
-    serverless.setProvider('google', new QcloudProvider(serverless))
+    serverless.setProvider('qcloud', new QcloudProvider(serverless))
     const options = {
       stage: 'dev',
-      region: 'us-central1',
+      region: 'sh',
     }
     googleRemove = new GoogleRemove(serverless, options)
     key = `serverless/${serverless.service.service}/${options.stage}`

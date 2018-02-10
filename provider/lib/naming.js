@@ -4,4 +4,4 @@ module.exports = {
     providerName: 'qcloud',
 
     deploymentBucketPrefix: 'serverlessdeploymentbucket',
-};
+}
