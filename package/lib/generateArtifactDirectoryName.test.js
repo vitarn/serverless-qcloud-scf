@@ -43,7 +43,7 @@ describe('GenerateArtifactDirectoryName', () => {
 
     const { DeploymentBucket } = serverless.service.provider.compiledConfigurationTemplate.Resources
 
-    expect(DeploymentBucket.Key).toMatch(/my-service\/dev\/.+\/my-code\.zip/)
+    expect(DeploymentBucket.Key).toMatch(/^serverless\/my-service\/dev\/.+\/my-code\.zip$/)
     expect(DeploymentBucket.Body).toBe('my-code.zip')
     expect(DeploymentBucket.ContentLength).toBe(99)
   })

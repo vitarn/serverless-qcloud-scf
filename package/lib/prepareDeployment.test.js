@@ -21,11 +21,11 @@ describe('PrepareDeployment', () => {
       compiledConfigurationTemplate: coreResources,
       deploymentBucket: 'my-bucket',
     }
-    serverless.setProvider('qcloud', new QcloudProvider(serverless))
     const options = {
       stage: 'dev',
       region: 'sh',
     }
+    serverless.setProvider('qcloud', new QcloudProvider(serverless, options))
     qcloudPackage = new QcloudPackage(serverless, options)
   })
 

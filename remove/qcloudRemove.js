@@ -1,9 +1,7 @@
 'use strict'
 
-const BbPromise = require('bluebird')
-
 const validate = require('../shared/validate')
-const setDefaults = require('../shared/utils')
+// const setDefaults = require('../shared/utils')
 const emptyDeploymentBucket = require('./lib/emptyDeploymentBucket')
 const removeDeployment = require('./lib/removeDeployment')
 
@@ -16,22 +14,25 @@ class QcloudRemove {
     Object.assign(
       this,
       validate,
-      setDefaults,
-      setDeploymentBucketName,
+      // setDefaults,
+      // setDeploymentBucketName,
       emptyDeploymentBucket,
       removeDeployment,
-      monitorDeployment)
+      // monitorDeployment
+    )
 
-    // this.hooks = {
-    //   'before:remove:remove': () => BbPromise.bind(this)
-    //     .then(this.validate)
-    //     .then(this.setDefaults)
-    //     .then(this.setDeploymentBucketName),
+    this.hooks = {
+      'before:remove:remove': async () => {
+        await this.validate()
+        // await this.setDefaults()
+        // await this.setDeploymentBucketName()
+      },
 
-    //   'remove:remove': () => BbPromise.bind(this)
-    //     .then(this.emptyDeploymentBucket)
-    //     .then(this.removeDeployment),
-    // }
+      'remove:remove': async () => {
+        await this.emptyDeploymentBucket()
+        await this.removeDeployment()
+      },
+    }
   }
 }
 

@@ -19,6 +19,7 @@ describe('QcloudProvider', () => {
   beforeEach(() => {
     serverless = new Serverless()
     serverless.service = {
+      service: 'my-service',
       provider: {
         project: 'example-project',
         credentials: '/root/.qcloudcli/credentials',
@@ -29,7 +30,9 @@ describe('QcloudProvider', () => {
       .returns('[default]\nqcloud_secretkey = mykey\nqcloud_secretid = myid')
     homedirStub = sinon.stub(os, 'homedir')
       .returns('/root')
-    qcloudProvider = new QcloudProvider(serverless)
+    qcloudProvider = new QcloudProvider(serverless, {
+      region: 'sh',
+    })
   })
 
   afterEach(() => {
@@ -83,6 +86,33 @@ describe('QcloudProvider', () => {
     })
   })
 
+  describe('#stage', () => {
+    it('should prefer options over config or provider', () => {
+      qcloudProvider.options = { stage: 'optionsStage' }
+      serverless.config = { stage: 'configStage' }
+      serverless.service.provider = { stage: 'providerStage' }
+
+      expect(qcloudProvider.stage).toEqual('optionsStage')
+    })
+
+    it('should prefer config over provider in lieu of options', () => {
+      serverless.config = { stage: 'configStage' }
+      serverless.service.provider = { stage: 'providerStage' }
+
+      expect(qcloudProvider.stage).toEqual('configStage')
+    })
+
+    it('should use provider in lieu of options and config', () => {
+      serverless.service.provider = { stage: 'providerStage' }
+
+      expect(qcloudProvider.stage).toEqual('providerStage')
+    })
+
+    it('should use the default dev in lieu of options, config, and provider', () => {
+      expect(qcloudProvider.stage).toEqual('dev')
+    })
+  })
+
   describe('#region', () => {
     it('should prefer options over config or provider', () => {
       qcloudProvider.options = { region: 'optionsRegion' }
@@ -93,6 +123,7 @@ describe('QcloudProvider', () => {
     })
 
     it('should prefer config over provider in lieu of options', () => {
+      qcloudProvider.options = {}
       serverless.config = { region: 'configRegion' }
       serverless.service.provider = { region: 'providerRegion' }
 
@@ -100,13 +131,124 @@ describe('QcloudProvider', () => {
     })
 
     it('should use provider in lieu of options and config', () => {
+      qcloudProvider.options = {}
+      serverless.config = {}
       serverless.service.provider = { region: 'providerRegion' }
 
       expect(qcloudProvider.region).toEqual('providerRegion')
     })
 
     it('should use the default gz in lieu of options, config, and provider', () => {
+      qcloudProvider.options = {}
+      serverless.config = {}
+      serverless.service.provider = {}
       expect(qcloudProvider.region).toEqual('gz')
+    })
+  })
+
+  describe('#serviceName', () => {
+    it('should return service name or unnamed', () => {
+      expect(qcloudProvider.serviceName).toEqual('my-service')
+    })
+  })
+
+  describe('#serviceWithStage', () => {
+    it('should return service name and stage join with "-"', () => {
+      expect(qcloudProvider.serviceWithStage).toEqual('my-service-dev')
+    })
+  })
+
+  describe('#deploymentBucketName', () => {
+    it('should use the service name and region as suffix', () => {
+      expect(qcloudProvider.deploymentBucketName).toEqual('sls-sh-my-service')
+    })
+
+    it('should to lowercase and replace invalid charactors to "-"', () => {
+      serverless.service.service = 'S@m4_bad'
+
+      expect(qcloudProvider.deploymentBucketName).toEqual('sls-sh-s-m4-bad')
+    })
+
+    it('should truncate if long than 40', () => {
+      serverless.service.service = 's'.repeat(40)
+
+      expect(qcloudProvider.deploymentBucketName).toEqual('sls-sh-' + 's'.repeat(33))
+    })
+  })
+
+  describe('#artifactDirectoryPrefix', () => {
+    it('should gen a prefix for artifact dir bucket key', () => {
+      expect(qcloudProvider.artifactDirectoryPrefix).toEqual('serverless/my-service/dev')
+    })
+
+    it('should to lowercase and replace invalid charactors to "-"', () => {
+      serverless.service.service = 'S@m4_bad'
+
+      expect(qcloudProvider.deploymentBucketName).toEqual('sls-sh-s-m4-bad')
+    })
+
+    it('should truncate if long than 40', () => {
+      serverless.service.service = 's'.repeat(40)
+
+      expect(qcloudProvider.deploymentBucketName).toEqual('sls-sh-' + 's'.repeat(33))
+    })
+  })
+  
+  describe('#apiGatewayServiceName', () => {
+    it('should use provider apiGateway name', () => {
+      serverless.service.provider = { apiGateway: { name: 'my_api_gateway' } }
+
+      expect(qcloudProvider.apiGatewayServiceName).toEqual('my_api_gateway')
+    })
+    
+    it('should use provider apiGateway', () => {
+      serverless.service.provider = { apiGateway: 'my_api_gateway' }
+      
+      expect(qcloudProvider.apiGatewayServiceName).toEqual('my_api_gateway')
+    })
+
+    it('should replace invalid charactors to "-"', () => {
+      serverless.service.provider = { apiGateway: 'S@m4-bad' }
+
+      expect(qcloudProvider.apiGatewayServiceName).toEqual('S_m4_bad')
+    })
+
+    it('should truncate if long than 40', () => {
+      serverless.service.provider = { apiGateway: 's'.repeat(51) }
+
+      expect(qcloudProvider.apiGatewayServiceName).toEqual('s'.repeat(50))
+    })
+    
+    it('should gen api gateway service name with service and stage', () => {
+      expect(qcloudProvider.apiGatewayServiceName).toEqual('my_service_dev')
+    })
+  })
+
+  describe('#apiGatewayServiceProtocol', () => {
+    it('should use provider apiGateway protocol', () => {
+      serverless.service.provider = { apiGateway: { protocol: 'https' } }
+
+      expect(qcloudProvider.apiGatewayServiceProtocol).toEqual('https')
+    })
+
+    it('should use default api gateway protocol', () => {
+      serverless.service.provider = { apiGateway: {} }
+
+      expect(qcloudProvider.apiGatewayServiceProtocol).toEqual('http&https')
+    })
+  })
+
+  describe('#apiGatewayServiceDescription', () => {
+    it('should use provider apiGateway description', () => {
+      serverless.service.provider = { apiGateway: { description: 'my api group' } }
+
+      expect(qcloudProvider.apiGatewayServiceDescription).toEqual('my api group')
+    })
+
+    it('should gen a default api gateway description', () => {
+      serverless.service.provider = { apiGateway: {} }
+
+      expect(qcloudProvider.apiGatewayServiceDescription).toBeDefined()
     })
   })
 })

@@ -64,7 +64,7 @@ module.exports = {
       || _.get(service, 'provider.stage')
       || 'dev'
 
-    cli.log(`Publishing API Gateway service ${APIGateway.serviceName}...`)
+    cli.log(`Releasing API Gateway service ${APIGateway.serviceName}...`)
 
     // 'test' | 'prepub' | 'release'
     const envMap = {

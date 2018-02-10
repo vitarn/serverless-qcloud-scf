@@ -1,7 +1,6 @@
 'use strict'
 
 const sinon = require('sinon')
-const BbPromise = require('bluebird')
 
 const QcloudProvider = require('../../provider/qcloudProvider')
 const QcloudRemove = require('../qcloudRemove')
@@ -9,7 +8,7 @@ const Serverless = require('../../test/serverless')
 
 xdescribe('EmptyDeploymentBucket', () => {
   let serverless
-  let googleRemove
+  let qcloudRemove
   let key
 
   beforeEach(() => {
@@ -20,12 +19,12 @@ xdescribe('EmptyDeploymentBucket', () => {
         deploymentBucketName: 'sls-my-service-dev-12345678',
       },
     }
-    serverless.setProvider('qcloud', new QcloudProvider(serverless))
     const options = {
       stage: 'dev',
       region: 'sh',
     }
-    googleRemove = new GoogleRemove(serverless, options)
+    serverless.setProvider('qcloud', new QcloudProvider(serverless, options))
+    qcloudRemove = new QcloudRemove(serverless, options)
     key = `serverless/${serverless.service.service}/${options.stage}`
   })
 

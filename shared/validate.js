@@ -28,7 +28,22 @@ module.exports = {
     }
 
     if (!/^.[\w-]*$/.test(name)) {
-      throw new Error(`Your service name "${name}" should consist only of "a-z, A-Z, 0-9, -, _"`)
+      throw new Error(`Your service name "${name}" should consist only of "a-z A-Z 0-9 - _"`)
+    }
+  },
+
+  validateAPIGatewayServiceName() {
+    const name = _.get(this, 'serverless.service.provider.apiGateway.name')
+      || _.get(this, 'serverless.service.provider.apiGateway')
+    
+    if (typeof name === 'string') {
+      if (name.length > 50) {
+        throw new Error(`Your api gateway service name "${name}" should not longer than 50 characters.`)
+      }
+
+      if (!/^\w+$/.test(name)) {
+        throw new Error(`Your api gateway service name "${name}" should consist only of "a-z A-Z 0-9 _"`)
+      }
     }
   },
   
@@ -43,7 +58,15 @@ module.exports = {
       }
 
       if (!/^.[\w-]*$/.test(funcKey)) {
-        throw new Error(`Your function name "${funcKey}" should consist only of "a-z, A-Z, 0-9, -, _"`)
+        throw new Error(`Your function name "${funcKey}" should consist only of "a-z A-Z 0-9 - _"`)
+      }
+    })
+  },
+
+  validateFunctionDescriptions() {
+    _.forEach(this.serverless.service.functions, (funcObject, funcKey) => {
+      if (funcObject.description && !/^[0-9a-z ,\.]{0,1000}$/i.test(funcObject.description)) {
+        throw new Error(`Your function ${funcKey} description should consist only of "a-z A-Z 0-9 , ." and max 1000.`)
       }
     })
   },

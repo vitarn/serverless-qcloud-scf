@@ -9,7 +9,7 @@ const BbPromise = require('bluebird')
 module.exports = {
   async setupFunctions() {
     const { provider, templates, serverless: { cli } } = this
-    const api = provider.sdk.scf
+    const sdk = provider.sdk.scf
     const bucket = templates.update.Resources.DeploymentBucket
     const functions = templates.update.Resources.CloudFunctions || []
     const cosBucket = provider.getCOSBucket(bucket)
@@ -20,7 +20,7 @@ module.exports = {
     }
 
     return BbPromise.all(functions.map(func => {
-      return api.requestAsync(_.assign(
+      return sdk.requestAsync(_.assign(
         _.pick(func, 'Region', 'functionName'),
         { Action: 'GetFunction' }
       ))
@@ -31,7 +31,7 @@ module.exports = {
         .then(res => {
           if (res.code !== 0) {
             cli.log(`Creating function "${func.functionName}"...`)
-            return api.requestAsync(_.assign(
+            return sdk.requestAsync(_.assign(
               {},
               func,
               {
@@ -55,7 +55,7 @@ module.exports = {
           } else {
             cli.log(`Updating function "${func.functionName}"...`)
 
-            return api.requestAsync(_.assign(
+            return sdk.requestAsync(_.assign(
               {},
               func,
               {

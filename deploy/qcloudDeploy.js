@@ -4,7 +4,7 @@ const path = require('path')
 const chalk = require('chalk')
 
 const validate = require('../shared/validate')
-const utils = require('../shared/utils')
+// const utils = require('../shared/utils')
 const loadTemplates = require('./lib/loadTemplates')
 const setupService = require('./lib/setupService')
 const uploadArtifacts = require('./lib/uploadArtifacts')
@@ -20,7 +20,7 @@ class QcloudDeploy {
     Object.assign(
       this,
       validate,
-      utils,
+      // utils,
       loadTemplates,
       setupService,
       uploadArtifacts,
@@ -31,7 +31,7 @@ class QcloudDeploy {
     this.hooks = {
       'before:deploy:deploy': async () => {
         await this.validate()
-        await this.setDefaults()
+        // await this.setDefaults()
         await this.loadTemplates()
       },
 

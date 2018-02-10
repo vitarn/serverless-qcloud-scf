@@ -22,9 +22,7 @@ module.exports = {
       cli.log(`Compiling function "${functionName}"...`)
       // "environment":{"variables":[{"key":"NODE_ENV","value":"production"},{"key":"ABC","value":"1"}]},"vpc":{"vpcId":"","subnetId":""}}
       const funcTemplate = {
-        Region: _.get(options, 'region')
-          || _.get(service, 'provider.region')
-          || 'gz',
+        Region: provider.region,
         functionName: funcObject.name,
         handler: funcObject.handler,
         description: funcObject.description,
@@ -63,9 +61,7 @@ module.exports = {
     const { APIGatewayApis } = service.provider.compiledConfigurationTemplate.Resources
 
     const apiTemplate = {
-      Region: _.get(options, 'region')
-        || _.get(service, 'provider.region')
-        || 'gz',
+      Region: provider.region,
       apiName: http.name || funcObject.name,
       apiDesc: http.description,
       serviceType: 'SCF',
@@ -73,7 +69,7 @@ module.exports = {
       authRequired: http.private ? 'TRUE' : 'FALSE',
       requestConfig: {
         method: _.toUpper(http.method || 'GET'),
-        path: `/${http.path || ''}`,
+        path: typeof http.path === 'string' ? (http.path.startsWith('/') ? http.path : `/${http.path}`) : '/',
       },
       serviceScfFunctionName: funcObject.name,
       responseType: _.toUpper(http.responseType) || 'JSON',

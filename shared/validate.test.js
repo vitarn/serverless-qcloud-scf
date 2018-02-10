@@ -90,6 +90,26 @@ describe('Validate', () => {
     })
   })
 
+  describe('#validateAPIGatewayServiceName', () => {
+    it('should throw an error if api gateway service name longer than 50', () => {
+      serverless.service.provider = { apiGateway: { name: 's'.repeat(51) } }
+
+      expect(() => qcloudCommand.validateAPIGatewayServiceName()).toThrow(Error)
+    })
+
+    it('should throw an error if the function name contains an invalid character', () => {
+      serverless.service.provider = { apiGateway: { name: 'my-api-group' } }
+
+      expect(() => qcloudCommand.validateAPIGatewayServiceName()).toThrow(Error)
+    })
+
+    it('should not throw an error if the service name is valid', () => {
+      serverless.service.provider = { apiGateway: { name: 'my_api_group' } }
+
+      expect(() => qcloudCommand.validateAPIGatewayServiceName()).not.toThrow(Error)
+    })
+  })
+
   describe('#validateFunctionNames()', () => {
     it('should throw an errir if the function name long than 60', () => {
       qcloudCommand.serverless.service.functions = {
@@ -125,7 +145,7 @@ describe('Validate', () => {
   })
 
   describe('#validateHandlers()', () => {
-    it('should throw an errir if missing handler', () => {
+    it('should throw an error if missing handler', () => {
       qcloudCommand.serverless.service.functions = {
         foo: {}
       }
@@ -141,6 +161,48 @@ describe('Validate', () => {
       }
 
       expect(() => qcloudCommand.validateHandlers()).not.toThrow(Error)
+    })
+  })
+
+  describe('#validateFunctionDescriptions()', () => {
+    it('should throw an error if function description long than 1000', () => {
+      qcloudCommand.serverless.service.functions = {
+        foo: {
+          description: 'f'.repeat(1001)
+        }
+      }
+
+      expect(() => qcloudCommand.validateFunctionDescriptions()).toThrow(Error)
+    })
+    
+    it('should throw an error if function description is invalid', () => {
+      qcloudCommand.serverless.service.functions = {
+        foo: {
+          description: 'f-n'
+        }
+      }
+
+      expect(() => qcloudCommand.validateFunctionDescriptions()).toThrow(Error)
+    })
+
+    it('should throw an error if function description contains Chinese', () => {
+      qcloudCommand.serverless.service.functions = {
+        foo: {
+          description: '汉'
+        }
+      }
+
+      expect(() => qcloudCommand.validateFunctionDescriptions()).toThrow(Error)
+    })
+
+    it('should not throw if function description is valid', () => {
+      qcloudCommand.serverless.service.functions = {
+        foo: {
+          description: 'This is my first cloud function, I wish everyone goes well.'
+        }
+      }
+
+      expect(() => qcloudCommand.validateFunctionDescriptions()).not.toThrow(Error)
     })
   })
 })
