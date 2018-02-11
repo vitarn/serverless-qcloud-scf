@@ -1,3 +1,5 @@
+English | [简体中文](./README.zh-CN.md)
+
 # Serverless QCloud SCF(Serverless Cloud Function) Plugin
 
 This plugin enables support for [QCloud SCF](https://cloud.tencent.com/product/scf) within the [Serverless Framework](https://github.com/serverless/serverless).
@@ -114,7 +116,7 @@ Consider use [dotenv](https://github.com/motdotla/dotenv) or [direnv](https://gi
   serverless remove
   ```
 
-  Note: by default RAM roles and policies created during the deployment are not removed. You can use `serverless remove --remove-roles` if you do want to remove them.
+  Note: Some resources cannot remove, since it's not empty. The reason is your projects share a common service name. This issue different project deploy into same COS Bucket / API Gateway.
 
 ## Develop
 
