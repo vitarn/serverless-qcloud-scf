@@ -103,15 +103,20 @@ class QcloudProvider {
     return {
       SecretId: key.qcloud_secretid,
       SecretKey: key.qcloud_secretkey,
+      AppId: key.qcloud_appid,
     }
   }
 
   get appId() {
-    const { QCLOUD_APPID: appid } = process.env
+    let { QCLOUD_APPID: appid } = process.env
 
     if (!appid) {
-      this.serverless.cli.log(`WARN: Missing env "QCLOUD_APPID". It's required params for Qcloud COS bucket name.`)
-      return ''
+      appid = this.credentials.AppId
+
+      if (!appid) {
+        this.cli.warn(`Missing Qcloud AppId. It's required params for Qcloud COS bucket name.`)
+        return ''
+      }
     }
 
     return appid
