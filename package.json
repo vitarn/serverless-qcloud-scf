@@ -1,6 +1,6 @@
 {
   "name": "serverless-qcloud-scf",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Provider plugin for the Serverless Framework v1.x which adds support for Qcloud SCF(Serverless Cloud Function).",
   "main": "index.js",
   "author": "colder",
@@ -12,7 +12,8 @@
     "test": "jest --maxWorkers=5",
     "testing": "jest --watch",
     "coverage": "jest --maxWorkers=5 --coverage",
-    "lint": "eslint . --cache"
+    "lint": "eslint . --cache",
+    "release": "git release `node -e \"console.log('v'+require('./package').version)\"` -c"
   },
   "homepage": "https://github.com/vitarn/serverless-qcloud-scf",
   "keywords": [
@@ -48,5 +49,12 @@
   },
   "engines": {
     "node": ">=8"
-  }
+  },
+  "files": [
+    "**/*.js",
+    "**/*.json",
+    "!test",
+    "!*.test.js",
+    "!yarn.lock"
+  ]
 }
