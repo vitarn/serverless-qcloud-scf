@@ -140,7 +140,7 @@ Service ID is unique. Service name and API name is not unique.
 
 Plugin will search service by region and name. Create it if not exists. Overwrite exists apis if service exists. But cannot handle multi service with same names.
 
-Inner service, API method+path is unique.
+Inside service, API "method+path" is unique.
 
 ## Develop
 
