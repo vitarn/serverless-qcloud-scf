@@ -1,0 +1,10 @@
+{
+    "name": "serverless-qcloud-scf-demo",
+    "version": "0.0.1",
+    "description": "Serverless qcloud scf example",
+    "license": "MIT",
+    "main": "handler.js",
+    "devDependencies": {
+        "serverless-qcloud-scf": "*"
+    }
+}
