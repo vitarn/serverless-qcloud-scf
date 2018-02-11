@@ -79,9 +79,9 @@ exports.hello = (event, context, callback) => {
 }
 ```
 
-**Credentials**
+**凭证**
 
-注意 `~/.qcloudcli/credentials` 是 [qcloudcli](https://cloud.tencent.com/product/cli) 在运行 `qcloudcli configure` 后生成的凭证. 你不必使用 qcloudcli, 你可以选择手动创建这个文件, 填入你的 access keys, 并记得在 `serverless.yml` 文件里指向 credentials 文件.
+注意 `~/.qcloudcli/credentials` 是 [qcloudcli](https://cloud.tencent.com/product/cli) 在运行 `qcloudcli configure` 后生成的凭证. 你不必使用 qcloudcli, 也可以选择手动创建这个文件, 填入你的 secret keys, 记得在 `serverless.yml` 文件里指向 credentials 文件.
 
 除了 `qcloud_secretkey` and `qcloud_secretid` 以外, 请配置 `qcloud_appid` (在 Qcloud 控制台中可以找到你的帐号ID, 以125开头的数字). 完整的凭证文件类似这样:
 
@@ -112,11 +112,35 @@ qcloud_appid = 1250000000
 
 * 当你不再需要之前部署的服务后可以选择移除它们:
 
-  ```
+  ```console
   serverless remove
   ```
 
-  注意: 部分资源可能无法移除, 例如非空的 COS Bucket, 非空的 API 网关, 造成这种情况的原因有很多, 例如你有多个项目共享同一个服务名称, 则这些项目会共享 COS Bucket 和 API 网关.
+  **注意**: 部分资源可能无法移除, 例如非空的 COS Bucket, 非空的 API 网关, 造成这种情况的原因有很多, 例如部署成功后修改了项目配置 `serverless.yml`, 例如你有多个项目共享同一个服务名称, 则这些项目会共享 COS Bucket 和 API 网关.
+
+## 限制
+
+### 云函数(SCF)
+
+同地域下云函数名称唯一.
+
+每个地域下的最大函数数量不能超过20个, 详见[产品文档](https://cloud.tencent.com/document/product/583/11637)
+
+### 对象存储(COS)
+
+同帐号下对象存储名称唯一.
+
+如果部署所用的 Bucket 已经存在, 插件会尝试将 ACL 设为 `public-read` 并向其中写入内容.
+
+创建北京(bj)区云函数时, 代码只能从对象存储 `ap-beijing-1` 区读取.
+
+### API 网关
+
+服务ID唯一. 服务名允许重名. API允许重名.
+
+插件根据区域和服务名搜寻目标服务, 如果不存在则创建, 如果存在会覆盖其中已有的 API, 插件无法处理两个以上的同名服务.
+
+服务内部的 API 按路径和方法决定唯一性.
 
 ## 开发
 
