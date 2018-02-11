@@ -1,8 +1,8 @@
 'use strict'
 
 const cleanupServerlessDir = require('./lib/cleanupServerlessDir')
-const validate = require('../shared/validate')
-const utils = require('../shared/utils')
+const validate = require('../lib/validate')
+const utils = require('../lib/utils')
 const prepareDeployment = require('./lib/prepareDeployment')
 const saveCreateTemplateFile = require('./lib/writeFilesToDisk')
 const compileFunctions = require('./lib/compileFunctions')

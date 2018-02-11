@@ -3,8 +3,8 @@
 const path = require('path')
 const chalk = require('chalk')
 
-const validate = require('../shared/validate')
-// const utils = require('../shared/utils')
+const validate = require('../lib/validate')
+// const utils = require('../lib/utils')
 const loadTemplates = require('./lib/loadTemplates')
 const setupService = require('./lib/setupService')
 const uploadArtifacts = require('./lib/uploadArtifacts')
@@ -40,24 +40,8 @@ class QcloudDeploy {
         await this.uploadArtifacts()
         await this.setupFunctions()
         await this.setupEvents()
-        await this.log()
       },
     }
-  }
-
-  log() {
-    const { templates, serverless: { cli } } = this
-    const { APIGateway, APIGatewayApis, APIGatewayRelease, CloudFunctions } = templates.update.Resources
-
-    cli.consoleLog(`    ${chalk.yellow.underline('API Gateway Information')}
-      ${chalk.yellow('service id:')} ${APIGateway.serviceId}
-      ${chalk.yellow('service name:')} ${APIGateway.serviceName}
-      ${chalk.yellow('region:')} ${APIGateway.Region}
-      ${chalk.yellow('endpoints:')}
-        ${APIGatewayApis.map(a => `${a.requestConfig.method} - ${APIGateway.protocol === 'https' ? 'https://' : ''}${APIGateway.subDomain}/${APIGatewayRelease.environmentName}${a.requestConfig.path}`).join(`\n${' '.repeat(8)}`)}
-      ${chalk.yellow('functions:')}
-        ${CloudFunctions.map(f => `${f.functionName}`).join(`\n${' '.repeat(8)}`)}
-    `)
   }
 }
 

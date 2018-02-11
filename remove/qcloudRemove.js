@@ -1,7 +1,7 @@
 'use strict'
 
-const validate = require('../shared/validate')
-// const setDefaults = require('../shared/utils')
+const validate = require('../lib/validate')
+// const setDefaults = require('../lib/utils')
 const emptyDeploymentBucket = require('./lib/emptyDeploymentBucket')
 const removeDeployment = require('./lib/removeDeployment')
 
