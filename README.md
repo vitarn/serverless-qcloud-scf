@@ -164,9 +164,12 @@ serverless package
 
 ## TODO
 
+* [x] `serverless package`
+* [x] `serverless deploy`
+* [ ] `serverless deploy --function`
+* [x] `serverless remove`
 * [ ] `serverless invoke`
-* [ ] `serverless info`
-* [ ] `serverless deploy function`
+* [x] `serverless info`
 * [ ] `serverless rollback`
 * [ ] function: event: cos
 * [ ] function: event: cmq

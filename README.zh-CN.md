@@ -144,37 +144,6 @@ qcloud_appid = 1250000000
 
 服务内部的 API 按 "方法+路径" 的方式决定唯一性.
 
-## 开发
-
-```
-# clone this repo
-git clone git@github.com:vitarn/serverless-qcloud-scf.git
-
-# link this module to global node_modules
-cd serverless-qcloud-scf
-npm install
-npm link
-
-# try it out by packaging the test project
-cd test/project
-npm install
-npm link serverless-qcloud-scf
-serverless package
-```
-
-## TODO
-
-* [ ] `serverless invoke`
-* [ ] `serverless info`
-* [ ] `serverless deploy function`
-* [ ] `serverless rollback`
-* [ ] function: event: cos
-* [ ] function: event: cmq
-* [ ] function: event: http: usagePlan
-* [ ] function: event: http: key
-* [ ] function: event: http: custom domain
-* [ ] function: event: http: switch release
-
 ## License
 
 MIT
