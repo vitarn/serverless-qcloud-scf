@@ -1,39 +1,38 @@
-'use strict';
+'use strict'
 
-const expect = require('chai').expect;
-const sinon = require('sinon');
-const AwsInfo = require('./index');
-const AwsProvider = require('../provider/awsProvider');
-const Serverless = require('../../../Serverless');
+const sinon = require('sinon')
+const QcloudInfo = require('./index')
+const QcloudProvider = require('../provider/qcloudProvider')
+const Serverless = require('../test/Serverless')
 
-describe('#getApiKeyValues()', () => {
-  let serverless;
-  let awsInfo;
-  let requestStub;
+xdescribe('#getApiKeyValues()', () => {
+  let serverless
+  let qcloudInfo
+  let requestStub
 
   beforeEach(() => {
     const options = {
       stage: 'dev',
-      region: 'us-east-1',
-    };
-    serverless = new Serverless();
-    serverless.setProvider('aws', new AwsProvider(serverless, options));
-    serverless.service.service = 'my-service';
-    awsInfo = new AwsInfo(serverless, options);
-    requestStub = sinon.stub(awsInfo.provider, 'request');
-  });
+      region: 'sh',
+    }
+    serverless = new Serverless()
+    serverless.setProvider('qcloud', new QcloudProvider(serverless, options))
+    serverless.service.service = 'my-service'
+    qcloudInfo = new QcloudInfo(serverless, options)
+    requestStub = sinon.stub(qcloudInfo.provider, 'request')
+  })
 
   afterEach(() => {
-    awsInfo.provider.request.restore();
-  });
+    qcloudInfo.provider.request.restore()
+  })
 
   it('should add API Key values to this.gatheredData if API key names are available', () => {
     // set the API Keys for the service
-    awsInfo.serverless.service.provider.apiKeys = ['foo', 'bar'];
+    qcloudInfo.serverless.service.provider.apiKeys = ['foo', 'bar']
 
-    awsInfo.gatheredData = {
+    qcloudInfo.gatheredData = {
       info: {},
-    };
+    }
 
     const apiKeyItems = {
       items: [
@@ -53,9 +52,9 @@ describe('#getApiKeyValues()', () => {
           value: 'valueForKeyBar',
         },
       ],
-    };
+    }
 
-    requestStub.resolves(apiKeyItems);
+    requestStub.resolves(apiKeyItems)
 
     const expectedGatheredDataObj = {
       info: {
@@ -70,56 +69,56 @@ describe('#getApiKeyValues()', () => {
           },
         ],
       },
-    };
+    }
 
-    return awsInfo.getApiKeyValues().then(() => {
-      expect(requestStub.calledOnce).to.equal(true);
-      expect(awsInfo.gatheredData).to.deep.equal(expectedGatheredDataObj);
-    });
-  });
+    return qcloudInfo.getApiKeyValues().then(() => {
+      expect(requestStub.calledOnce).toBe(true)
+      expect(qcloudInfo.gatheredData).toEqual(expectedGatheredDataObj)
+    })
+  })
 
   it('should resolve if AWS does not return API key values', () => {
     // set the API Keys for the service
-    awsInfo.serverless.service.provider.apiKeys = ['foo', 'bar'];
+    qcloudInfo.serverless.service.provider.apiKeys = ['foo', 'bar']
 
-    awsInfo.gatheredData = {
+    qcloudInfo.gatheredData = {
       info: {},
-    };
+    }
 
     const apiKeyItems = {
       items: [],
-    };
+    }
 
-    requestStub.resolves(apiKeyItems);
+    requestStub.resolves(apiKeyItems)
 
     const expectedGatheredDataObj = {
       info: {
         apiKeys: [],
       },
-    };
+    }
 
-    return awsInfo.getApiKeyValues().then(() => {
-      expect(requestStub.calledOnce).to.equal(true);
-      expect(awsInfo.gatheredData).to.deep.equal(expectedGatheredDataObj);
-    });
-  });
+    return qcloudInfo.getApiKeyValues().then(() => {
+      expect(requestStub.calledOnce).toBe(true)
+      expect(qcloudInfo.gatheredData).toEqual(expectedGatheredDataObj)
+    })
+  })
 
   it('should resolve if API key names are not available', () => {
-    awsInfo.serverless.service.provider.apiKeys = null;
+    qcloudInfo.serverless.service.provider.apiKeys = null
 
-    awsInfo.gatheredData = {
+    qcloudInfo.gatheredData = {
       info: {},
-    };
+    }
 
     const expectedGatheredDataObj = {
       info: {
         apiKeys: [],
       },
-    };
+    }
 
-    return awsInfo.getApiKeyValues().then(() => {
-      expect(requestStub.calledOnce).to.equal(false);
-      expect(awsInfo.gatheredData).to.deep.equal(expectedGatheredDataObj);
-    });
-  });
-});
+    return qcloudInfo.getApiKeyValues().then(() => {
+      expect(requestStub.calledOnce).toBe(false)
+      expect(qcloudInfo.gatheredData).toEqual(expectedGatheredDataObj)
+    })
+  })
+})

@@ -1,36 +1,35 @@
-'use strict';
+'use strict'
 
-const expect = require('chai').expect;
-const sinon = require('sinon');
-const AwsInfo = require('./index');
-const AwsProvider = require('../provider/awsProvider');
-const Serverless = require('../../../Serverless');
+const sinon = require('sinon')
+const QcloudInfo = require('./index')
+const QcloudProvider = require('../provider/qcloudProvider')
+const Serverless = require('../test/Serverless')
 
 xdescribe('#getStackInfo()', () => {
-  let serverless;
-  let awsInfo;
-  let describeStacksStub;
+  let serverless
+  let qcloudInfo
+  let describeStacksStub
 
   beforeEach(() => {
     const options = {
       stage: 'dev',
-      region: 'us-east-1',
-    };
-    serverless = new Serverless();
-    serverless.setProvider('aws', new AwsProvider(serverless, options));
-    serverless.service.service = 'my-service';
+      region: 'sh',
+    }
+    serverless = new Serverless()
+    serverless.setProvider('aws', new QcloudProvider(serverless, options))
+    serverless.service.service = 'my-service'
     serverless.service.functions = {
       hello: {},
       world: {},
-    };
-    awsInfo = new AwsInfo(serverless, options);
+    }
+    qcloudInfo = new QcloudInfo(serverless, options)
 
-    describeStacksStub = sinon.stub(awsInfo.provider, 'request');
-  });
+    describeStacksStub = sinon.stub(qcloudInfo.provider, 'request')
+  })
 
   afterEach(() => {
-    awsInfo.provider.request.restore();
-  });
+    qcloudInfo.provider.request.restore()
+  })
 
   it('attach info from describeStack call to this.gatheredData if result is available', () => {
     const describeStacksResponse = {
@@ -66,9 +65,9 @@ xdescribe('#getStackInfo()', () => {
           DisableRollback: false,
         },
       ],
-    };
+    }
 
-    describeStacksStub.resolves(describeStacksResponse);
+    describeStacksStub.resolves(describeStacksResponse)
 
     const expectedGatheredDataObj = {
       info: {
@@ -105,26 +104,26 @@ xdescribe('#getStackInfo()', () => {
           OutputValue: 'yyy',
         },
       ],
-    };
+    }
 
-    return awsInfo.getStackInfo().then(() => {
-      expect(describeStacksStub.calledOnce).to.equal(true);
+    return qcloudInfo.getStackInfo().then(() => {
+      expect(describeStacksStub.calledOnce).toBe(true)
       expect(describeStacksStub.calledWithExactly(
         'CloudFormation',
         'describeStacks',
         {
-          StackName: awsInfo.provider.naming.getStackName(),
+          StackName: qcloudInfo.provider.naming.getStackName(),
         }
-      )).to.equal(true);
+      )).toBe(true)
 
-      expect(awsInfo.gatheredData).to.deep.equal(expectedGatheredDataObj);
-    });
-  });
+      expect(qcloudInfo.gatheredData).toEqual(expectedGatheredDataObj)
+    })
+  })
 
   it('should resolve if result is empty', () => {
-    const describeStacksResponse = null;
+    const describeStacksResponse = null
 
-    describeStacksStub.resolves(describeStacksResponse);
+    describeStacksStub.resolves(describeStacksResponse)
 
     const expectedGatheredDataObj = {
       info: {
@@ -136,19 +135,19 @@ xdescribe('#getStackInfo()', () => {
         stack: 'my-service-dev',
       },
       outputs: [],
-    };
+    }
 
-    return awsInfo.getStackInfo().then(() => {
-      expect(describeStacksStub.calledOnce).to.equal(true);
+    return qcloudInfo.getStackInfo().then(() => {
+      expect(describeStacksStub.calledOnce).toBe(true)
       expect(describeStacksStub.calledWithExactly(
         'CloudFormation',
         'describeStacks',
         {
-          StackName: awsInfo.provider.naming.getStackName(),
+          StackName: qcloudInfo.provider.naming.getStackName(),
         }
-      )).to.equal(true);
+      )).toBe(true)
 
-      expect(awsInfo.gatheredData).to.deep.equal(expectedGatheredDataObj);
-    });
-  });
-});
+      expect(qcloudInfo.gatheredData).toEqual(expectedGatheredDataObj)
+    })
+  })
+})
