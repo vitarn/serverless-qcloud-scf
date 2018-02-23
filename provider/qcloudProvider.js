@@ -86,7 +86,8 @@ class QcloudProvider {
   }
 
   get credentials() {
-    let credentials = this.serverless.service.provider.credentials
+    // BUGFIX: If no secret in env. Fallback to here. But it maybe undefined in test.
+    let credentials = _.get(this, 'serverless.service.provider.credentials')
 
     if (!credentials) return {}
 
