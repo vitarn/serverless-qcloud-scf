@@ -20,7 +20,7 @@ describe('UploadArtifacts', () => {
     serverless.service.service = 'my-service'
     serverless.service.provider = {
       name: 'qcloud',
-      credentials: path.join(__dirname, '..', '..', 'test', 'credentials')
+      // credentials: path.join(__dirname, '..', '..', 'test', 'credentials'),
     }
     serverless.config = { servicePath }
     const options = {
