@@ -3,7 +3,7 @@
 const sinon = require('sinon')
 const QcloudInfo = require('./index')
 const QcloudProvider = require('../provider/qcloudProvider')
-const Serverless = require('../test/Serverless')
+const Serverless = require('../test/serverless')
 
 xdescribe('#getStackInfo()', () => {
   let serverless
