@@ -2581,9 +2581,9 @@ punycode@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.0.tgz#5f863edc89b96db09074bad7947bf09056ca4e7d"
 
-qcloud-apigateway@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/qcloud-apigateway/-/qcloud-apigateway-0.0.3.tgz#2c71a900ed24dde72c716e4c33cdc441ba12a2b7"
+qcloud-apigateway@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/qcloud-apigateway/-/qcloud-apigateway-0.0.4.tgz#8d215a2ee157203847d2b8a0f6544eaf40cf8938"
   dependencies:
     qcloudapi-sdk "^0.1.6"
 

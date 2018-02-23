@@ -4,6 +4,8 @@ English | [简体中文](./README.zh-CN.md)
 
 This plugin enables support for [QCloud SCF](https://cloud.tencent.com/product/scf) within the [Serverless Framework](https://github.com/serverless/serverless).
 
+[![Build Status](https://travis-ci.org/vitarn/serverless-qcloud-scf.svg?branch=master)](https://travis-ci.org/vitarn/serverless-qcloud-scf)
+
 ## Getting started
 
 ### Pre-requisites
