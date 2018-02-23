@@ -1,6 +1,10 @@
+English | [简体中文](./README.zh-CN.md)
+
 # Serverless QCloud SCF(Serverless Cloud Function) Plugin
 
 This plugin enables support for [QCloud SCF](https://cloud.tencent.com/product/scf) within the [Serverless Framework](https://github.com/serverless/serverless).
+
+[![Build Status](https://travis-ci.org/vitarn/serverless-qcloud-scf.svg?branch=master)](https://travis-ci.org/vitarn/serverless-qcloud-scf)
 
 ## Getting started
 
@@ -110,11 +114,35 @@ Consider use [dotenv](https://github.com/motdotla/dotenv) or [direnv](https://gi
 
 * When you no longer needs your service, you can remove the service, functions, along with deployed endpoints and triggers using:
 
-  ```
+  ```console
   serverless remove
   ```
 
-  Note: by default RAM roles and policies created during the deployment are not removed. You can use `serverless remove --remove-roles` if you do want to remove them.
+  Note: Some resources cannot remove, since it's not empty. The reason is your projects share a common service name. This issue different project deploy into same COS Bucket / API Gateway.
+
+## LIMIT
+
+### SCF
+
+Function name is unique in a region.
+
+The functions cannot more than 20, see [scf document](https://cloud.tencent.com/document/product/583/11637)
+
+### COS
+
+Bucket name is unique in an account.
+
+Plugin will try overwrite ACL to `public-read` and write files into it if deploy target bucket is exists.
+
+When create function in bj region, Qcloud will read code from COS `ap-beijing-1` region.
+
+### API Gateway
+
+Service ID is unique. Service name and API name is not unique.
+
+Plugin will search service by region and name. Create it if not exists. Overwrite exists apis if service exists. But cannot handle multi service with same names.
+
+Inside service, API "method+path" is unique.
 
 ## Develop
 
@@ -136,9 +164,12 @@ serverless package
 
 ## TODO
 
+* [x] `serverless package`
+* [x] `serverless deploy`
+* [ ] `serverless deploy --function`
+* [x] `serverless remove`
 * [ ] `serverless invoke`
-* [ ] `serverless info`
-* [ ] `serverless deploy function`
+* [x] `serverless info`
 * [ ] `serverless rollback`
 * [ ] function: event: cos
 * [ ] function: event: cmq

@@ -1,0 +1,20 @@
+language: node_js
+node_js:
+- node
+- 8
+cache: yarn
+branches:
+  only:
+  - master
+  - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+notifications:
+  email: false
+deploy:
+  provider: npm
+  skip_cleanup: true
+  email: $NPM_EMAIL
+  api_key: $NPM_TOKEN
+  on:
+    tags: true
+    repo: vitarn/serverless-qcloud-scf
+    node: node
