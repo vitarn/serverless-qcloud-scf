@@ -4,8 +4,6 @@
 
 本插件提供 [Serverless Framework](https://github.com/serverless/serverless) 对 [QCloud SCF](https://cloud.tencent.com/product/scf) 的支持.
 
-[![Build Status](https://travis-ci.org/vitarn/serverless-qcloud-scf.svg?branch=master)](https://travis-ci.org/vitarn/serverless-qcloud-scf)
-
 ## 安装使用
 
 ### 需求
