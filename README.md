@@ -2,9 +2,13 @@ English | [简体中文](./README.zh-CN.md)
 
 # Serverless QCloud SCF(Serverless Cloud Function) Plugin
 
-This plugin enables support for [QCloud SCF](https://cloud.tencent.com/product/scf) within the [Serverless Framework](https://github.com/serverless/serverless).
+[![Serverless][ico-serverless]][link-serverless]
+[![License][ico-license]][link-license]
+[![NPM][ico-npm]][link-npm]
+[![Build Status][ico-build]][link-build]
+[![Coverage Status][ico-codecov]][link-codecov]
 
-[![Build Status](https://travis-ci.org/vitarn/serverless-qcloud-scf.svg?branch=master)](https://travis-ci.org/vitarn/serverless-qcloud-scf)
+This plugin enables support for [QCloud SCF][link-qcloud-scf] within the [Serverless Framework][link-gh-serverless].
 
 ## Getting started
 
@@ -83,7 +87,7 @@ exports.hello = (event, context, callback) => {
 
 **Credentials**
 
-Note that `~/.qcloudcli/credentials` is where the [qcloudcli](https://cloud.tencent.com/product/cli) puts the crendentials after running `qcloudcli configure`. You don't have to use qcloudcli though, you can just create a similar file with your own access keys and make sure pointing the value of the `credentials` field in `serverless.yml` to it.
+Note that `~/.qcloudcli/credentials` is where the [qcloudcli][link-qcloud-cli] puts the crendentials after running `qcloudcli configure`. You don't have to use qcloudcli though, you can just create a similar file with your own access keys and make sure pointing the value of the `credentials` field in `serverless.yml` to it.
 
 In addition to `qcloud_secretkey` and `qcloud_secretid`, please configure `qcloud_appid` (a numeric number for identifying your account, available in Qcloud Console) as well. This credential file should look something like this:
 
@@ -100,7 +104,7 @@ If you not prefer `qcloudcli`. You can write credentials in ENV. `serverless-qcl
 
 `QCLOUD_SECRETID=xxx QCLOUD_SECRETKEY=xxx QCLOUD_APPID=1250000000 serverless package`
 
-Consider use [dotenv](https://github.com/motdotla/dotenv) or [direnv](https://github.com/direnv/direnv).
+Consider use [dotenv][link-gh-dotenv] or [direnv][link-gh-direnv].
 
 ### Workflow
 
@@ -126,7 +130,7 @@ Consider use [dotenv](https://github.com/motdotla/dotenv) or [direnv](https://gi
 
 Function name is unique in a region.
 
-The functions cannot more than 20, see [scf document](https://cloud.tencent.com/document/product/583/11637)
+The functions cannot more than 20, see [scf document][link-qcloud-scf-limit]
 
 ### COS
 
@@ -181,3 +185,23 @@ serverless package
 ## License
 
 MIT
+
+[ico-serverless]: http://public.serverless.com/badges/v3.svg
+[ico-license]: https://img.shields.io/github/license/vitarn/serverless-qcloud-scf.svg
+[ico-npm]: https://img.shields.io/npm/v/serverless-qcloud-scf.svg
+[ico-build]: https://travis-ci.org/vitarn/serverless-qcloud-scf.svg?branch=master
+[ico-codecov]: https://codecov.io/gh/vitarn/serverless-qcloud-scf/branch/master/graph/badge.svg
+
+[link-serverless]: http://www.serverless.com/
+[link-license]: ./blob/master/LICENSE
+[link-npm]: https://www.npmjs.com/package/serverless-qcloud-scf
+[link-build]: https://travis-ci.org/vitarn/serverless-qcloud-scf
+[link-codecov]: https://codecov.io/gh/vitarn/serverless-qcloud-scf
+
+[link-gh-serverless]: https://github.com/serverless/serverless
+[link-gh-dotenv]: https://github.com/motdotla/dotenv
+[link-gh-direnv]: https://github.com/direnv/direnv
+
+[link-qcloud-scf]: https://cloud.tencent.com/product/scf
+[link-qcloud-cli]: https://cloud.tencent.com/product/cli
+[link-qcloud-scf-limit]: https://cloud.tencent.com/document/product/583/11637
