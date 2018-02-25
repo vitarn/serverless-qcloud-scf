@@ -1,14 +1,27 @@
 language: node_js
 node_js:
-- node
-- 8
+  - node
+  - 8
+
 cache: yarn
+
 branches:
   only:
-  - master
-  - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
+before_install:
+  - which npx || yarn global add npx
+
+script:
+  - yarn coverage
+
+after_success:
+  - '[ $TRAVIS_NODE_VERSION = node ] && npx codecov'
+
 notifications:
   email: false
+
 deploy:
   provider: npm
   skip_cleanup: true

@@ -40,7 +40,6 @@
     "qcloudapi-sdk": "^0.1.6"
   },
   "devDependencies": {
-    "coveralls": "^2.11.16",
     "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.2.0",
     "eslint-plugin-import": "^2.2.0",
