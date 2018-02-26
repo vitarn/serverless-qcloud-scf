@@ -2,6 +2,9 @@ language: node_js
 node_js:
   - node
   - 8
+  - 6
+  # Jest takes advantage of new features added to Node 6.
+  # https://facebook.github.io/jest/docs/en/troubleshooting.html#compatibility-issues
 
 cache: yarn
 

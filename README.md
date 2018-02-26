@@ -14,8 +14,8 @@ This plugin enables support for [QCloud SCF][link-qcloud-scf] within the [Server
 
 ### Pre-requisites
 
-* Node.js v8.x for using the plugin.
-  * Note that at the moment, Qcloud Serverless Cloud Function only supports v6.10. But for now we still need to use a higher version of runtime to use the CLI.
+* Node.js `>= 6` for using the plugin.
+  * Note that at the moment, Qcloud Serverless Cloud Function only supports v6.10. If you use a higher version of nodejs. Don't forget transform your code down to es5.
 * Serverless CLI v1.20.0+. You can get it by running `npm i -g serverless`.
 * A Qcloud account.
 
@@ -70,7 +70,7 @@ functions:
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "serverless-qcloud-scf": "^0.0.1"
+    "serverless-qcloud-scf": "*"
   }
 }
 ```

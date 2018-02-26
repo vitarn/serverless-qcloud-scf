@@ -1,8 +1,0 @@
-{
-  "Description": "The Qcloud template for this Serverless application",
-  "Resources": {
-    "DeploymentBucket": {},
-    "CloudFunctions": [],
-    "APIGatewayApis": []
-  }
-}
