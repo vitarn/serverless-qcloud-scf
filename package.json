@@ -55,6 +55,7 @@
     "files": [
         "**/*.js",
         "**/*.json",
+        "types/**/*.d.ts",
         "!.vscode",
         "!test",
         "!*.test.js",
