@@ -8,8 +8,8 @@
 
 ### 需求
 
-* Node.js 版本不低于 v8.x.
-  * 目前, Qcloud 云函数只支持 Node.js v6.10. 但你仍然需要 Node8 以上版本运行 Serverless CLI.
+* Node.js 版本不低于 v6.x.
+  * 目前, Qcloud 云函数只支持 Node.js v6.10. 如果你的开发环境高于这个版本, 记得部署之前把源码转换到 es5.
 * Serverless CLI v1.20.0+. 通过 `npm i -g serverless` 安装.
 * Qcloud 帐号.
 
@@ -81,7 +81,7 @@ exports.hello = (event, context, callback) => {
 
 **凭证**
 
-注意 `~/.qcloudcli/credentials` 是 [qcloudcli](https://cloud.tencent.com/product/cli) 在运行 `qcloudcli configure` 后生成的凭证. 你不必使用 qcloudcli, 也可以选择手动创建这个文件, 填入你的 secret keys, 记得在 `serverless.yml` 文件里指向 credentials 文件.
+注意 `~/.qcloudcli/credentials` 是 [qcloudcli][link-qcloud-cli] 在运行 `qcloudcli configure` 后生成的凭证. 你不必使用 qcloudcli, 也可以选择手动创建这个文件, 填入你的 secret keys, 记得在 `serverless.yml` 文件里指向 credentials 文件.
 
 除了 `qcloud_secretkey` and `qcloud_secretid` 以外, 请配置 `qcloud_appid` (在 Qcloud 控制台中可以找到你的帐号ID, 以125开头的数字). 完整的凭证文件类似这样:
 
@@ -98,7 +98,7 @@ qcloud_appid = 1250000000
 
 `QCLOUD_SECRETID=xxx QCLOUD_SECRETKEY=xxx QCLOUD_APPID=1250000000 serverless package`
 
-建议尝试 [dotenv](https://github.com/motdotla/dotenv) 或 [direnv](https://github.com/direnv/direnv).
+建议尝试 [dotenv][link-gh-dotenv] 或 [direnv][link-gh-direnv]
 
 ### 工作流
 
@@ -124,7 +124,7 @@ qcloud_appid = 1250000000
 
 同地域下云函数名称唯一.
 
-每个地域下的最大函数数量不能超过20个, 详见[产品文档](https://cloud.tencent.com/document/product/583/11637)
+每个地域下的最大函数数量不能超过20个, 详见[产品文档][link-qcloud-scf-limit]
 
 ### 对象存储(COS)
 
@@ -145,3 +145,11 @@ qcloud_appid = 1250000000
 ## License
 
 MIT
+
+[link-gh-serverless]: https://github.com/serverless/serverless
+[link-gh-dotenv]: https://github.com/motdotla/dotenv
+[link-gh-direnv]: https://github.com/direnv/direnv
+
+[link-qcloud-scf]: https://cloud.tencent.com/product/scf
+[link-qcloud-cli]: https://cloud.tencent.com/product/cli
+[link-qcloud-scf-limit]: https://cloud.tencent.com/document/product/583/11637
