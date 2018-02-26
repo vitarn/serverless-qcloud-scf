@@ -1,8 +1,8 @@
 import sinon from 'sinon'
 import chalk from 'chalk'
 import { QcloudInfo } from './info'
-import { QcloudProvider } from './provider'
-import { Serverless } from './test/serverless'
+import { QcloudProvider } from '../provider'
+import { Serverless } from '../test/serverless'
 
 describe('QcloudInfo', () => {
   xdescribe('index', () => {

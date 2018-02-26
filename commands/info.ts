@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import chalk from 'chalk'
-import { QcloudCommand } from './lib'
+import { QcloudCommand } from '../lib'
 
 export class QcloudInfo extends QcloudCommand {
   gatheredData

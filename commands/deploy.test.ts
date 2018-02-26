@@ -1,8 +1,8 @@
 import path from 'path'
 import sinon from 'sinon'
-import { QcloudProvider } from './provider'
+import { QcloudProvider } from '../provider'
 import { QcloudDeploy } from './deploy'
-import { Serverless } from './test/serverless'
+import { Serverless } from '../test/serverless'
 
 describe('UploadArtifacts', () => {
     let serverless

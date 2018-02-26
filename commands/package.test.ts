@@ -2,9 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import fse from 'fs-extra'
 import sinon from 'sinon'
-import { QcloudProvider } from './provider'
+import { QcloudProvider } from '../provider'
 import { QcloudPackage } from './package'
-import { Serverless } from './test/serverless'
+import { Serverless } from '../test/serverless'
 
 describe('QcloudPackage', () => {
     describe('QcloudPackage', () => {

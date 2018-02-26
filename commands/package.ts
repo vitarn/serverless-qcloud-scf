@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import fse from 'fs-extra'
 import _ from 'lodash'
-import { QcloudCommand } from './lib'
+import { QcloudCommand } from '../lib'
 
 function generateDeploymentTemplate(): any {
     return {

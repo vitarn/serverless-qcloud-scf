@@ -1,8 +1,11 @@
-'use strict'
-
 // mock to test functionality in a command unrelated matter
 // this mean that not e.g. qcloudDeploy but the more abstract qcloudCommand can be used
-class QCloudCommand {
+export class QCloudCommand {
+  serverless
+  options
+  provider
+  testSubject
+  
   constructor(serverless, options, testSubject) {
     this.options = options
     this.serverless = serverless
@@ -13,5 +16,3 @@ class QCloudCommand {
       testSubject)
   }
 }
-
-module.exports = QCloudCommand

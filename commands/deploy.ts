@@ -2,7 +2,7 @@ import path from 'path'
 import fs from 'fs'
 import _ from 'lodash'
 import chalk from 'chalk'
-import { QcloudCommand } from './lib'
+import { QcloudCommand } from '../lib'
 
 export class QcloudDeploy extends QcloudCommand {
     service

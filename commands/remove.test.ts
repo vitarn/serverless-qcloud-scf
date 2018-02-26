@@ -1,8 +1,8 @@
 import sinon from 'sinon'
 import BbPromise from 'bluebird'
-import { QcloudProvider } from './provider'
+import { QcloudProvider } from '../provider'
 import { QcloudRemove } from './remove'
-import Serverless from './test/serverless'
+import { Serverless } from '../test/serverless'
 
 xdescribe('QcloudRemove', () => {
     let serverless

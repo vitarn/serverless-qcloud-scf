@@ -1,11 +1,9 @@
 import QcloudIndex from './index'
 import { QcloudProvider } from './provider'
-import { QcloudPackage } from './package'
-import { QcloudDeploy } from './deploy'
-import { QcloudRemove } from './remove'
-// import {QcloudInvoke} from './invoke'
-// import {QcloudLogs} from './logs'
-import { QcloudInfo } from './info'
+import {
+    QcloudPackage, QcloudDeploy, QcloudRemove, QcloudInfo,
+    // QcloudInvoke, QcloudLogs,
+} from './commands'
 import { Serverless } from './test/serverless'
 
 describe('QcloudIndex', () => {

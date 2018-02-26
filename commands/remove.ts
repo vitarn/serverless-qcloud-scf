@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { QcloudCommand } from './lib'
+import { QcloudCommand } from '../lib'
 
 export class QcloudRemove extends QcloudCommand {
     constructor(serverless, options) {

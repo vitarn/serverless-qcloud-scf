@@ -7,12 +7,10 @@ whole provider implementation.
 */
 
 import { QcloudProvider } from './provider'
-import { QcloudPackage } from './package'
-import { QcloudDeploy } from './deploy'
-import { QcloudRemove } from './remove'
-// const QcloudInvoke = require('./invoke/qcloudInvoke')
-// const QcloudLogs = require('./logs/qcloudLogs')
-import { QcloudInfo } from './info'
+import {
+    QcloudPackage, QcloudDeploy, QcloudRemove, QcloudInfo,
+    // QcloudInvoke, QcloudLogs
+} from './commands'
 
 export default class QcloudIndex {
     serverless
