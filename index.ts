@@ -12,7 +12,7 @@ import {
     // QcloudInvoke, QcloudLogs
 } from './commands'
 
-export default class QcloudIndex {
+export = class QcloudIndex {
     serverless
     options
 

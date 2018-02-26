@@ -13,7 +13,7 @@
         "testing": "jest --watch",
         "coverage": "jest --maxWorkers=5 --coverage",
         "release": "git release `node -e \"console.log('v'+require('./package').version)\"` -c",
-        "prepare": "tsc"
+        "prepack": "tsc --removeComments --inlineSourceMap false"
     },
     "homepage": "https://github.com/vitarn/serverless-qcloud-scf",
     "keywords": [
@@ -58,7 +58,7 @@
         "!.vscode",
         "!test",
         "!*.test.js",
-        "!tsconfig.json",
+        "!tsconfig*.json",
         "!yarn.lock"
     ],
     "jest": {
