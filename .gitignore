@@ -80,3 +80,7 @@ typings/
 
 # Serverless directories
 .serverless
+
+# Project
+*.js
+!test/**/*.js
