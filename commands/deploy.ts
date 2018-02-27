@@ -179,7 +179,7 @@ export class QcloudDeploy extends QcloudCommand {
                                 Region: func.Region,
                                 codeObject,
                             },
-                            func,
+                            _.omit(func, 'code'),
                         ))
                             .catch(err => {
                                 cli.log('ERROR: Qcloud SCF CreateFunction fail!')
