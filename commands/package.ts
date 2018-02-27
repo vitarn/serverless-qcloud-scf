@@ -113,7 +113,7 @@ export class QcloudPackage extends QcloudCommand {
             const funcTemplate = {
                 Region: provider.region,
                 functionName: funcObject.name,
-                code: funcObject.package.artifact,
+                code: _.get(funcObject, 'package.artifact'),
                 handler: funcObject.handler,
                 description: funcObject.description,
                 runtime: _.capitalize(_.get(funcObject, 'runtime')

@@ -1,6 +1,6 @@
 {
     "name": "serverless-qcloud-scf",
-    "version": "0.0.4",
+    "version": "0.0.3",
     "description": "Provider plugin for the Serverless Framework v1.x which adds support for Qcloud SCF(Serverless Cloud Function).",
     "main": "index.js",
     "author": "colder",
