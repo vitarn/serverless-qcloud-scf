@@ -170,7 +170,7 @@ serverless package
 
 * [x] `serverless package`
 * [x] `serverless deploy`
-* [ ] `serverless deploy --function`
+* [x] `serverless deploy --function`
 * [x] `serverless remove`
 * [ ] `serverless invoke`
 * [x] `serverless info`

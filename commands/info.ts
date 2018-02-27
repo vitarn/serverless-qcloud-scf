@@ -11,6 +11,7 @@ export class QcloudInfo extends QcloudCommand {
     this.commands = {
       qcloud: {
         type: 'entrypoint',
+        usage: 'Show Qcloud Infomation',
         commands: {
           info: {
             lifecycleEvents: [
@@ -153,7 +154,7 @@ export class QcloudInfo extends QcloudCommand {
             let path
 
             if (typeof event.http === 'object') {
-              method = event.http.method.toUpperCase()
+              method = (event.http.method || 'get').toUpperCase()
               path = event.http.path
             } else {
               method = event.http.split(' ')[0].toUpperCase()

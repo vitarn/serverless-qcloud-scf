@@ -39,32 +39,29 @@ describe('QcloudPackage', () => {
                 let cleanupServerlessDirStub
                 let validateStub
                 let prepareDeploymentStub
-                let saveCreateTemplateFileStub
                 let generateArtifactDirectoryNameStub
                 let compileFunctionsStub
                 let mergeServiceResourcesStub
-                let saveUpdateTemplateFileStub
+                let saveTemplateFileStub
 
                 beforeEach(() => {
                     cleanupServerlessDirStub = sinon.stub(qcloudPackage, 'cleanupServerlessDir').returns(Promise.resolve())
                     validateStub = sinon.stub(qcloudPackage, 'validate').returns(Promise.resolve())
                     prepareDeploymentStub = sinon.stub(qcloudPackage, 'prepareDeployment').returns(Promise.resolve())
-                    saveCreateTemplateFileStub = sinon.stub(qcloudPackage, 'saveCreateTemplateFile').returns(Promise.resolve())
                     generateArtifactDirectoryNameStub = sinon.stub(qcloudPackage, 'generateArtifactDirectoryName').returns(Promise.resolve())
                     compileFunctionsStub = sinon.stub(qcloudPackage, 'compileFunctions').returns(Promise.resolve())
                     mergeServiceResourcesStub = sinon.stub(qcloudPackage, 'mergeServiceResources').returns(Promise.resolve())
-                    saveUpdateTemplateFileStub = sinon.stub(qcloudPackage, 'saveUpdateTemplateFile').returns(Promise.resolve())
+                    saveTemplateFileStub = sinon.stub(qcloudPackage, 'saveTemplateFile').returns(Promise.resolve())
                 })
 
                 afterEach(() => {
                     qcloudPackage.cleanupServerlessDir.restore()
                     qcloudPackage.validate.restore()
                     qcloudPackage.prepareDeployment.restore()
-                    qcloudPackage.saveCreateTemplateFile.restore()
                     qcloudPackage.generateArtifactDirectoryName.restore()
                     qcloudPackage.compileFunctions.restore()
                     qcloudPackage.mergeServiceResources.restore()
-                    qcloudPackage.saveUpdateTemplateFile.restore()
+                    qcloudPackage.saveTemplateFile.restore()
                 })
 
                 it('should run "package:cleanup" promise chain', () => qcloudPackage
@@ -81,7 +78,6 @@ describe('QcloudPackage', () => {
                 it('should run "package:initialize" promise chain', () => qcloudPackage
                     .hooks['package:initialize']().then(() => {
                         expect(prepareDeploymentStub.calledOnce).toEqual(true)
-                        expect(saveCreateTemplateFileStub.calledAfter(prepareDeploymentStub)).toEqual(true)
                     }))
 
                 it('should run "package:compileFunctions" promise chain', () => qcloudPackage
@@ -93,7 +89,7 @@ describe('QcloudPackage', () => {
                     .hooks['package:finalize']().then(() => {
                         expect(generateArtifactDirectoryNameStub.calledOnce).toEqual(true)
                         expect(mergeServiceResourcesStub.calledAfter(generateArtifactDirectoryNameStub)).toEqual(true)
-                        expect(saveUpdateTemplateFileStub.calledAfter(mergeServiceResourcesStub)).toEqual(true)
+                        expect(saveTemplateFileStub.calledAfter(mergeServiceResourcesStub)).toEqual(true)
                     }))
             })
         })
@@ -238,35 +234,18 @@ describe('QcloudPackage', () => {
             qcloudPackage.serverless.utils.writeFileSync.restore()
         })
 
-        describe('#saveCreateTemplateFile()', () => {
+        describe('#saveTemplateFile()', () => {
             it('should write the template file into the services .serverless directory', () => {
-                const createFilePath = path.join(
+                const filePath = path.join(
                     qcloudPackage.serverless.config.servicePath,
                     '.serverless',
-                    'configuration-template-create.json',
+                    'configuration-template.json',
                 )
 
-                qcloudPackage.saveCreateTemplateFile()
+                qcloudPackage.saveTemplateFile()
 
                 expect(writeFileSyncStub.calledWithExactly(
-                    createFilePath,
-                    qcloudPackage.serverless.service.provider.compiledConfigurationTemplate,
-                )).toEqual(true)
-            })
-        })
-
-        describe('#saveUpdateTemplateFile()', () => {
-            it('should write the template file into the services .serverless directory', () => {
-                const updateFilePath = path.join(
-                    qcloudPackage.serverless.config.servicePath,
-                    '.serverless',
-                    'configuration-template-update.json',
-                )
-
-                qcloudPackage.saveUpdateTemplateFile()
-
-                expect(writeFileSyncStub.calledWithExactly(
-                    updateFilePath,
+                    filePath,
                     qcloudPackage.serverless.service.provider.compiledConfigurationTemplate,
                 )).toEqual(true)
             })

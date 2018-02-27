@@ -6,12 +6,12 @@ node_js:
   # Jest takes advantage of new features added to Node 6.
   # https://facebook.github.io/jest/docs/en/troubleshooting.html#compatibility-issues
 
-cache: yarn
-
 branches:
   only:
     - master
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
+cache: yarn
 
 before_install:
   - which npx || yarn global add npx
@@ -20,17 +20,27 @@ script:
   - yarn coverage
 
 after_success:
-  - '[ $TRAVIS_NODE_VERSION = node ] && npx codecov'
+  - npx codecov
+
+stages:
+  - test
+  - name: deploy
+    if: tag IS present
+
+jobs:
+  include:
+    - stage: deploy
+      script: skip
+      after_success: echo Ready deploy...
+      deploy:
+        provider: npm
+        skip_cleanup: true
+        email: $NPM_EMAIL
+        api_key: $NPM_TOKEN
+        on:
+          tags: true
+          repo: vitarn/serverless-qcloud-scf
+          node: node
 
 notifications:
   email: false
-
-deploy:
-  provider: npm
-  skip_cleanup: true
-  email: $NPM_EMAIL
-  api_key: $NPM_TOKEN
-  on:
-    tags: true
-    repo: vitarn/serverless-qcloud-scf
-    node: node

@@ -31,11 +31,11 @@ describe('UploadArtifacts', () => {
         serverless.utils.readFileSync.restore()
     })
 
-    describe('#loadTemplates()', () => {
+    describe('#loadTemplate()', () => {
         it('should make the templates accessible', async () => {
-            await qcloudDeploy.loadTemplates()
+            await qcloudDeploy.loadTemplate()
 
-            expect(readFileSyncStub.calledTwice).toEqual(true)
+            expect(readFileSyncStub.calledOnce).toEqual(true)
         })
     })
 })

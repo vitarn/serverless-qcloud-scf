@@ -1,4 +1,36 @@
 
+v0.0.3 / 2018-02-28
+===================
+
+## New:
+  1. Support `sls deploy -f xxx`
+  2. Support `sls info`
+
+  * Fix test
+  * Bump version
+  * Define travis stages
+  * Fix info command function default method GET
+  * Omit code when create function
+  * Merge deployment configuration template into one file
+  * Add deploy function command
+  * Add ServerlessQcloudConfig type definition
+  * Fix entry
+  * Remove node4 from travis
+  * Remove lint
+  * Mkdir commands
+  * Fully switch to typescript
+  * Add typescript config
+  * Add badges
+  * Active codecov
+  * Update qcloud-apigateway
+  * Fix provider get credentials
+  * Fix and skip info test
+  * Add travis
+  * Add base support for info command
+  * Move shared to lib
+  * Add readme zh
+  * Add changelog
+
 v0.0.2 / 2018-02-11
 ===================
 

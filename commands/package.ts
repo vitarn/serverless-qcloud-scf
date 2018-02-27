@@ -30,7 +30,6 @@ export class QcloudPackage extends QcloudCommand {
 
             'package:initialize': async () => {
                 await this.prepareDeployment()
-                await this.saveCreateTemplateFile()
             },
 
             'package:compileFunctions': async () => {
@@ -40,7 +39,7 @@ export class QcloudPackage extends QcloudCommand {
             'package:finalize': async () => {
                 await this.generateArtifactDirectoryName()
                 await this.mergeServiceResources()
-                await this.saveUpdateTemplateFile()
+                await this.saveTemplateFile()
             },
         }
     }
@@ -93,29 +92,16 @@ export class QcloudPackage extends QcloudCommand {
         service.provider.compiledConfigurationTemplate = deploymentTemplate
     }
 
-    async saveTemplateFile(name: string) {
-        const filePath = path.join(this.serverless.config.servicePath,
-            '.serverless', `configuration-template-${name}.json`)
+    async saveTemplateFile() {
+        const { serverless: { service, config, utils } } = this
+        const filePath = path.join(config.servicePath, '.serverless', 'configuration-template.json')
+        const fileContent = service.provider.compiledConfigurationTemplate
 
-        this.serverless.utils.writeFileSync(filePath,
-            this.serverless.service.provider.compiledConfigurationTemplate)
-    }
-
-    async saveCreateTemplateFile() {
-        this.saveTemplateFile('create')
-    }
-
-    async saveUpdateTemplateFile() {
-        this.saveTemplateFile('update')
+        utils.writeFileSync(filePath, fileContent)
     }
 
     async compileFunctions() {
         const { provider, options, serverless: { service, utils, cli } } = this
-
-        const artifactFilePath = service.package.artifact
-        const fileName = artifactFilePath.split(path.sep).pop()
-
-        service.package.artifactFilePath = `${service.package.artifactDirectoryName}/${fileName}`
 
         const CloudFunctions = service.provider.compiledConfigurationTemplate.Resources.CloudFunctions = []
 
@@ -127,6 +113,7 @@ export class QcloudPackage extends QcloudCommand {
             const funcTemplate = {
                 Region: provider.region,
                 functionName: funcObject.name,
+                code: _.get(funcObject, 'package.artifact'),
                 handler: funcObject.handler,
                 description: funcObject.description,
                 runtime: _.capitalize(_.get(funcObject, 'runtime')
@@ -215,17 +202,19 @@ export class QcloudPackage extends QcloudCommand {
         const { provider, serverless: { service } } = this
         const date = new Date()
         const dateString = `${date.getTime().toString()}-${date.toISOString()}`
-        const fileName = service.package.artifact.split(path.sep).pop()
+        const { artifact } = service.package
+        const fileName = artifact ? artifact.split(path.sep).pop() : ''
         const { DeploymentBucket } = service.provider.compiledConfigurationTemplate.Resources
 
-        _.assign(
-            service.provider.compiledConfigurationTemplate.Resources.DeploymentBucket,
-            {
-                Key: `${provider.artifactDirectoryPrefix}/${dateString}/${fileName}`,
-                Body: service.package.artifact,
-                ContentLength: fs.statSync(service.package.artifact).size,
-            }
-        )
+        Object.assign(DeploymentBucket, {
+            Key: `${provider.artifactDirectoryPrefix}/${dateString}/${fileName}`,
+            Body: artifact,
+            ContentLength: artifact ? fs.statSync(service.package.artifact).size : undefined,
+        })
+
+        if (artifact) {
+            DeploymentBucket.ContentLength = fs.statSync(service.package.artifact).size
+        }
     }
 
     async mergeServiceResources() {
