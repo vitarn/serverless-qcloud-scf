@@ -1,6 +1,8 @@
 export type ServerlessQcloudConfig = {
     service: string
 
+    custom: any
+
     provider: {
         name: 'qcloud'
         region?: 'bj' | 'sh' | 'gz'
@@ -22,6 +24,7 @@ export type ServerlessQcloudConfig = {
     plugins?: string[]
 
     package?: {
+        individually?: boolean
         include?: string[]
         exclude?: string[]
     }

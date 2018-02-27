@@ -23,8 +23,22 @@ export class QcloudDeploy extends QcloudCommand {
                 await this.setupFunctions()
                 await this.setupEvents()
             },
+
+            'deploy:function:initialize': async () => {
+                await this.checkIfFunctionExists()
+            },
+
+            'deploy:function:packageFunction': async () => {
+                await this.serverless.pluginManager.spawn('package:function')
+            },
+
+            'deploy:function:deploy': async () => {
+                await this.deployFunction()
+            },
         }
     }
+
+    /* deploy */
 
     async loadTemplates() {
         const { serverless: { config, utils } } = this
@@ -109,11 +123,31 @@ export class QcloudDeploy extends QcloudCommand {
         const bucket = templates.update.Resources.DeploymentBucket
         const cosBucket = provider.getCOSBucket(bucket)
 
-        cosBucket.Body = fs.createReadStream(cosBucket.Body)
+        // Shared package
+        if (cosBucket.Body) {
+            cosBucket.Body = fs.createReadStream(cosBucket.Body)
 
-        cli.log(`Uploading "${bucket.Key}" to OSS bucket "${bucket.Bucket}"...`)
+            cli.log(`Uploading "${bucket.Key}" to OSS bucket "${bucket.Bucket}"...`)
 
-        await api.putObjectAsync(cosBucket)
+            return api.putObjectAsync(cosBucket)
+        }
+
+        // There are 2 ways reach here: 1. package individually true. 2. serverless-webpack
+
+        const codes = _.uniq<string>(templates.update.Resources.CloudFunctions.map(func => path.resolve(func.code)))
+
+        return Promise.all(codes.map(code => {
+            const zipName = path.basename(code)
+            const copyBucket = Object.assign({}, cosBucket, {
+                Key: `${cosBucket.Key}${zipName}`,
+                Body: fs.createReadStream(code),
+                ContentLength: fs.statSync(code).size,
+            })
+
+            cli.log(`Uploading "${zipName}" to OSS bucket "${bucket.Bucket}"...`)
+
+            return api.putObjectAsync(copyBucket)
+        }))
     }
 
     async setupFunctions() {
@@ -121,33 +155,35 @@ export class QcloudDeploy extends QcloudCommand {
         const sdk = provider.sdk.scf
         const bucket = templates.update.Resources.DeploymentBucket
         const functions = templates.update.Resources.CloudFunctions || []
-        const cosBucket = provider.getCOSBucket(bucket)
-
-        const codeObject = {
-            cosBucketName: bucket.Bucket, // TODO: scf api append appid?
-            cosObjectName: cosBucket.Key,
-        }
 
         return Promise.all(functions.map(func => {
+            const codeObject = {
+                cosBucketName: bucket.Bucket, // TODO: scf api append appid?
+                cosObjectName: bucket.Key,
+            }
+
+            if (bucket.Key.endsWith('/')) {
+                codeObject.cosObjectName += path.basename(func.code)
+            }
+
             return sdk.requestAsync(_.assign(
+                { Action: 'GetFunction' },
                 _.pick(func, 'Region', 'functionName'),
-                { Action: 'GetFunction' }
             ))
                 .catch(err => {
                     cli.log('ERROR: Qcloud SCF GetFunction fail!')
                     throw err.error
                 })
                 .then(res => {
-                    if (res.code !== 0) {
+                    if (res.code > 0) {
                         cli.log(`Creating function "${func.functionName}"...`)
                         return sdk.requestAsync(_.assign(
-                            {},
-                            func,
                             {
                                 Action: 'CreateFunction',
                                 Region: func.Region,
                                 codeObject,
-                            }
+                            },
+                            func,
                         ))
                             .catch(err => {
                                 cli.log('ERROR: Qcloud SCF CreateFunction fail!')
@@ -165,13 +201,12 @@ export class QcloudDeploy extends QcloudCommand {
                         cli.log(`Updating function "${func.functionName}"...`)
 
                         return sdk.requestAsync(_.assign(
-                            {},
-                            func,
                             {
                                 Action: 'UpdateFunction',
                                 codeType: 'Cos',
                                 codeObject,
-                            }
+                            },
+                            func,
                         ))
                             .catch(err => {
                                 cli.log('ERROR: Qcloud SCF UpdateFunction fail!')
@@ -260,5 +295,85 @@ export class QcloudDeploy extends QcloudCommand {
         templates.update.Resources.APIGatewayRelease = _.assign({}, res, {
             environmentName: envMap[stage],
         })
+    }
+
+    /* deploy function */
+
+    async checkIfFunctionExists() {
+        const { options, provider, serverless: { service, cli } } = this
+        const sdk = provider.sdk.scf
+        const funcObj = service.getFunction(options.function)
+
+        const res = await sdk.requestAsync({
+            Action: 'GetFunction',
+            Region: provider.region,
+            functionName: funcObj.name,
+        })
+
+        if (res.code !== 0) {
+            const errorMessage = [
+                `The function "${options.function}" you want to update is not yet deployed.`,
+                ' Please run "serverless deploy" to deploy your service.',
+                ' After that you can redeploy your services functions with the',
+                ' "serverless deploy function" command.',
+            ].join('')
+            throw new Error(errorMessage)
+        }
+    }
+
+    async deployFunction() {
+        const { options, provider, serverless: { service, config, cli } } = this
+        const sdk = provider.sdk.scf
+        const funcObj = service.getFunction(options.function)
+        const artifactFileName = `${options.function}.zip`
+
+        let artifactFilePath
+        if (_.has(funcObj, ['package', 'artifact'])) {
+            artifactFilePath = funcObj.package.artifact
+        } else {
+            const packagePath = options.package ||
+                service.package.path ||
+                path.join(config.servicePath || '.', '.serverless')
+
+            artifactFilePath = service.package.artifact ||
+                path.join(packagePath, artifactFileName)
+        }
+
+        const stats = fs.statSync(artifactFilePath)
+
+        if (stats.size > 10 * 1000 * 1000) {
+            const errorMessage = [
+                `The function zip "${artifactFileName}" you want to update is big than 10M.`,
+                ' Qcloud not allow upload directly.',
+                ' Consider reduce your package size by serverless-webpack.',
+            ].join('')
+            throw new Error(errorMessage)
+        }
+
+        cli.log(`Uploading function: ${options.function} (${Math.round(stats.size / 1000) / 1000}M)...`)
+
+        const params = {
+            Action: 'UpdateFunction',
+            Region: provider.region,
+            functionName: funcObj.name,
+            code: `@${fs.readFileSync(artifactFilePath).toString('base64')}`,
+            handler: funcObj.handler,
+            description: funcObj.description,
+            memorySize: funcObj.memorySize || _.get(service, 'provider.memorySize'),
+            timeout: funcObj.timeout || _.get(service, 'provider.timeout'),
+            runtime: _.capitalize(funcObj.runtime || _.get(service, 'provider.runtime')),
+            codeType: 'Zipfile',
+        }
+
+        const res = await sdk.requestAsync(params)
+
+        if (res.code > 0) {
+            const error = new Error(res.message)
+            error.name = res.codeDesc
+
+            throw error
+        }
+
+        cli.log(`Successfully deployed function: ${options.function}`)
     }
 }

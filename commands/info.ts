@@ -11,6 +11,7 @@ export class QcloudInfo extends QcloudCommand {
     this.commands = {
       qcloud: {
         type: 'entrypoint',
+        usage: 'Show Qcloud Infomation',
         commands: {
           info: {
             lifecycleEvents: [
