@@ -30,18 +30,16 @@ export class QcloudPackage extends QcloudCommand {
 
             'package:initialize': async () => {
                 await this.prepareDeployment()
-                await this.saveCreateTemplateFile()
             },
 
             'package:compileFunctions': async () => {
-                // await new Promise(resolve => setTimeout(() => resolve(), 5000))
                 await this.compileFunctions()
             },
 
             'package:finalize': async () => {
                 await this.generateArtifactDirectoryName()
                 await this.mergeServiceResources()
-                await this.saveUpdateTemplateFile()
+                await this.saveTemplateFile()
             },
         }
     }
@@ -94,19 +92,12 @@ export class QcloudPackage extends QcloudCommand {
         service.provider.compiledConfigurationTemplate = deploymentTemplate
     }
 
-    async saveTemplateFile(name: string) {
+    async saveTemplateFile() {
         const { serverless: { service, config, utils } } = this
-        const filePath = path.join(config.servicePath, '.serverless', `configuration-template-${name}.json`)
+        const filePath = path.join(config.servicePath, '.serverless', 'configuration-template.json')
+        const fileContent = service.provider.compiledConfigurationTemplate
 
-        utils.writeFileSync(filePath, service.provider.compiledConfigurationTemplate)
-    }
-
-    async saveCreateTemplateFile() {
-        this.saveTemplateFile('create')
-    }
-
-    async saveUpdateTemplateFile() {
-        this.saveTemplateFile('update')
+        utils.writeFileSync(filePath, fileContent)
     }
 
     async compileFunctions() {
@@ -215,14 +206,15 @@ export class QcloudPackage extends QcloudCommand {
         const fileName = artifact ? artifact.split(path.sep).pop() : ''
         const { DeploymentBucket } = service.provider.compiledConfigurationTemplate.Resources
 
-        _.assign(
-            service.provider.compiledConfigurationTemplate.Resources.DeploymentBucket,
-            {
-                Key: `${provider.artifactDirectoryPrefix}/${dateString}/${fileName}`,
-                Body: artifact,
-                ContentLength: artifact ? fs.statSync(service.package.artifact).size : 0,
-            }
-        )
+        Object.assign(DeploymentBucket, {
+            Key: `${provider.artifactDirectoryPrefix}/${dateString}/${fileName}`,
+            Body: artifact,
+            ContentLength: artifact ? fs.statSync(service.package.artifact).size : undefined,
+        })
+
+        if (artifact) {
+            DeploymentBucket.ContentLength = fs.statSync(service.package.artifact).size
+        }
     }
 
     async mergeServiceResources() {

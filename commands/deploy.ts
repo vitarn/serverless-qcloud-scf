@@ -6,7 +6,7 @@ import { QcloudCommand } from '../lib'
 
 export class QcloudDeploy extends QcloudCommand {
     service
-    templates
+    template
 
     constructor(serverless, options) {
         super(serverless, options)
@@ -14,7 +14,7 @@ export class QcloudDeploy extends QcloudCommand {
         this.hooks = {
             'before:deploy:deploy': async () => {
                 await this.validate()
-                await this.loadTemplates()
+                await this.loadTemplate()
             },
 
             'deploy:deploy': async () => {
@@ -40,15 +40,11 @@ export class QcloudDeploy extends QcloudCommand {
 
     /* deploy */
 
-    async loadTemplates() {
+    async loadTemplate() {
         const { serverless: { config, utils } } = this
-        const createFilePath = path.join(config.servicePath, '.serverless', 'configuration-template-create.json')
-        const updateFilePath = path.join(config.servicePath, '.serverless', 'configuration-template-update.json')
+        const TemplatePath = path.join(config.servicePath, '.serverless', 'configuration-template.json')
 
-        this.templates = {
-            create: utils.readFileSync(createFilePath),
-            update: utils.readFileSync(updateFilePath),
-        }
+        this.template = utils.readFileSync(TemplatePath)
     }
 
     async setupService() {
@@ -57,8 +53,8 @@ export class QcloudDeploy extends QcloudCommand {
     }
 
     async createBucketIfNotExists() {
-        const { templates, provider, serverless: { cli } } = this
-        const bucket = templates.create.Resources.DeploymentBucket
+        const { template, provider, serverless: { cli } } = this
+        const bucket = template.Resources.DeploymentBucket
         const cosBucket = provider.getCOSBucket(bucket)
         const api = provider.sdk.cos
 
@@ -79,8 +75,8 @@ export class QcloudDeploy extends QcloudCommand {
     }
 
     async createAPIGatewayIfNotExists() {
-        const { templates, provider, serverless: { cli } } = this
-        const { APIGateway } = templates.create.Resources
+        const { template, provider, serverless: { cli } } = this
+        const { APIGateway } = template.Resources
         const api = provider.sdk.apigateway.setRegion(APIGateway.Region)
 
         const services = await api.describeServicesStatus({
@@ -101,13 +97,13 @@ export class QcloudDeploy extends QcloudCommand {
 
             const res = await api.createService(APIGateway)
 
-            _.assign(templates.update.Resources.APIGateway, res)
+            _.assign(template.Resources.APIGateway, res)
         } else {
             cli.log(`API Gateway service "${APIGateway.serviceName}" already exists`)
 
             const ag = matchedServices[0]
 
-            _.assign(templates.update.Resources.APIGateway, ag)
+            _.assign(template.Resources.APIGateway, ag)
 
             if (ag.serviceDesc === APIGateway.serviceDesc && ag.protocol === APIGateway.protocol) return
 
@@ -118,9 +114,9 @@ export class QcloudDeploy extends QcloudCommand {
     }
 
     async uploadArtifacts() {
-        const { templates, provider, serverless: { cli } } = this
+        const { template, provider, serverless: { cli } } = this
         const api = provider.sdk.cos
-        const bucket = templates.update.Resources.DeploymentBucket
+        const bucket = template.Resources.DeploymentBucket
         const cosBucket = provider.getCOSBucket(bucket)
 
         // Shared package
@@ -134,7 +130,7 @@ export class QcloudDeploy extends QcloudCommand {
 
         // There are 2 ways reach here: 1. package individually true. 2. serverless-webpack
 
-        const codes = _.uniq<string>(templates.update.Resources.CloudFunctions.map(func => path.resolve(func.code)))
+        const codes = _.uniq<string>(template.Resources.CloudFunctions.map(func => path.resolve(func.code)))
 
         return Promise.all(codes.map(code => {
             const zipName = path.basename(code)
@@ -151,10 +147,10 @@ export class QcloudDeploy extends QcloudCommand {
     }
 
     async setupFunctions() {
-        const { provider, templates, serverless: { cli } } = this
+        const { provider, template, serverless: { cli } } = this
         const sdk = provider.sdk.scf
-        const bucket = templates.update.Resources.DeploymentBucket
-        const functions = templates.update.Resources.CloudFunctions || []
+        const bucket = template.Resources.DeploymentBucket
+        const functions = template.Resources.CloudFunctions || []
 
         return Promise.all(functions.map(func => {
             const codeObject = {
@@ -221,9 +217,9 @@ export class QcloudDeploy extends QcloudCommand {
     triggers
 
     async setupEvents() {
-        const { templates } = this
+        const { template } = this
 
-        this.apis = templates.update.Resources.APIGatewayApis
+        this.apis = template.Resources.APIGatewayApis
         this.triggers = []
 
         await this.createApisIfNeeded()
@@ -233,8 +229,8 @@ export class QcloudDeploy extends QcloudCommand {
     async createApisIfNeeded() {
         if (!this.apis.length) return
 
-        const { provider, templates, serverless: { cli } } = this
-        const { Resources } = templates.update
+        const { provider, template, serverless: { cli } } = this
+        const { Resources } = template
         const { apigateway } = provider.sdk
         const { serviceId } = Resources.APIGateway
 
@@ -270,8 +266,8 @@ export class QcloudDeploy extends QcloudCommand {
     }
 
     async releaseAPIGateway() {
-        const { provider, options, service, templates, serverless: { cli } } = this
-        const { APIGateway } = templates.update.Resources
+        const { provider, options, service, template, serverless: { cli } } = this
+        const { APIGateway } = template.Resources
         const { apigateway } = provider.sdk
         const stage = _.get(options, 'stage')
             || _.get(service, 'provider.stage')
@@ -292,7 +288,7 @@ export class QcloudDeploy extends QcloudCommand {
             releaseDesc: 'Release by serverless'
         })
 
-        templates.update.Resources.APIGatewayRelease = _.assign({}, res, {
+        template.Resources.APIGatewayRelease = _.assign({}, res, {
             environmentName: envMap[stage],
         })
     }
