@@ -49,6 +49,7 @@
         "jest": "^22.2.2",
         "sinon": "^4.2.2",
         "standard-version": "^4.3.0",
+        "ts-jest": "^22.4.1",
         "typescript": "^2.7.2"
     },
     "engines": {
@@ -67,14 +68,15 @@
     "jest": {
         "moduleFileExtensions": [
             "ts",
-            "tsx",
-            "js"
+            "js",
+            "json",
+            "node"
         ],
         "transform": {
-            "^.+\\.(ts|tsx)$": "<rootDir>/test/preprocessor.js"
+            "^.+\\.tsx?$": "ts-jest"
         },
         "testMatch": [
-            "**/*.test.(ts|tsx)"
+            "**/*.test.ts"
         ]
     }
 }
