@@ -64,7 +64,7 @@ functions:
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
-    "serverless-qcloud-scf": "^0.0.1"
+    "serverless-qcloud-scf": "*"
   }
 }
 ```

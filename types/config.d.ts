@@ -75,6 +75,9 @@ export type ServerlessQcloudConfig = {
                     /** Bucket name. Region must same. */
                     name?: string
 
+                    /** COS Region */
+                    region?: 'ap-beijing-1' | 'ap-beijing' | 'ap-shanghai' | 'ap-guangzhou'
+
                     /**
                      * Trigger event
                      * 1. Cannot change event between `cos:ObjectCreated:*` and another starts with `cos:ObjectCreated`.
