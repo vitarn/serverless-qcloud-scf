@@ -6,30 +6,20 @@ node_js:
   # Jest takes advantage of new features added to Node 6.
   # https://facebook.github.io/jest/docs/en/troubleshooting.html#compatibility-issues
 
-branches:
-  only:
-    - master
-    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-
-cache: yarn
-
 before_install:
   - which npx || yarn global add npx
 
 script:
+  - yarn typecheck
   - yarn coverage
 
 after_success:
   - npx codecov
 
-stages:
-  - test
-  - name: deploy
-    if: tag IS present
-
 jobs:
   include:
     - stage: deploy
+      if: tag IS present
       script: skip
       after_success: echo Ready deploy...
       deploy:
@@ -41,6 +31,14 @@ jobs:
           tags: true
           repo: vitarn/serverless-qcloud-scf
           node: node
+
+
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
+cache: yarn
 
 notifications:
   email: false
