@@ -84,4 +84,3 @@ typings/
 # Project
 *.js
 !test/project/**/**.js
-!test/preprocessor.js
