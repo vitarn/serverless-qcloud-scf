@@ -73,7 +73,7 @@
             "node"
         ],
         "transform": {
-            "^.+\\.tsx?$": "ts-jest"
+            "^.+\\.ts$": "ts-jest"
         },
         "testMatch": [
             "**/*.test.ts"
