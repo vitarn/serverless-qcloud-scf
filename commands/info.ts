@@ -61,9 +61,9 @@ export class QcloudInfo extends QcloudCommand {
         await this.displayFunctions()
       },
 
-      'qcloud:info:displayStackOutputs': async () => {
-        await this.displayStackOutputs()
-      },
+      // 'qcloud:info:displayStackOutputs': async () => {
+      //   await this.displayStackOutputs()
+      // },
     }
   }
 

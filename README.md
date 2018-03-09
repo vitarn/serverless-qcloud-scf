@@ -176,7 +176,7 @@ serverless package
 * [ ] `serverless invoke`
 * [x] `serverless info`
 * [ ] `serverless rollback`
-* [ ] function: event: cos
+* [x] function: event: cos
 * [ ] function: event: cmq
 * [ ] function: event: http: usagePlan
 * [ ] function: event: http: key

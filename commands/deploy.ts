@@ -123,7 +123,7 @@ export class QcloudDeploy extends QcloudCommand {
         if (cosBucket.Body) {
             cosBucket.Body = fs.createReadStream(cosBucket.Body)
 
-            cli.log(`Uploading "${bucket.Key}" to OSS bucket "${bucket.Bucket}"...`)
+            cli.log(`Uploading "${bucket.Key}" to COS bucket "${bucket.Bucket}"...`)
 
             return api.putObjectAsync(cosBucket)
         }
@@ -140,7 +140,7 @@ export class QcloudDeploy extends QcloudCommand {
                 ContentLength: fs.statSync(code).size,
             })
 
-            cli.log(`Uploading "${zipName}" to OSS bucket "${bucket.Bucket}"...`)
+            cli.log(`Uploading "${zipName}" to COS bucket "${bucket.Bucket}"...`)
 
             return api.putObjectAsync(copyBucket)
         }))
@@ -213,28 +213,21 @@ export class QcloudDeploy extends QcloudCommand {
         }))
     }
 
-    apis
-    triggers
-
     async setupEvents() {
-        const { template } = this
-
-        this.apis = template.Resources.APIGatewayApis
-        this.triggers = []
-
         await this.createApisIfNeeded()
         await this.releaseAPIGateway()
+        await this.setTriggers()
     }
 
     async createApisIfNeeded() {
-        if (!this.apis.length) return
-
         const { provider, template, serverless: { cli } } = this
         const { Resources } = template
+        const { APIGatewayApis = [] } = Resources
+        if (!APIGatewayApis.length) return
         const { apigateway } = provider.sdk
         const { serviceId } = Resources.APIGateway
 
-        return Promise.all(this.apis.map(async api => {
+        return Promise.all(APIGatewayApis.map(async api => {
             _.assign(api, { serviceId })
 
             const res = await apigateway.describeApisStatus({
@@ -291,6 +284,50 @@ export class QcloudDeploy extends QcloudCommand {
         template.Resources.APIGatewayRelease = _.assign({}, res, {
             environmentName: envMap[stage],
         })
+    }
+
+    async setTriggers() {
+        const { provider, template, serverless: { cli } } = this
+        const { Resources } = template
+        const { FunctionTriggers = [] } = Resources
+        if (!FunctionTriggers.length) return
+        const sdk = provider.sdk
+
+        for (let trigger of FunctionTriggers) {
+            cli.log(`Setting trigger ${trigger.type} "${trigger.triggerName}"...`)
+
+            const func = await sdk.scf.requestAsync({
+                Action: 'GetFunction',
+                Region: provider.region,
+                functionName: trigger.functionName,
+            })
+
+            if (trigger.type === 'cos' &&
+                func.data.triggers.some(t => t.type === 'cos' &&
+                    t.triggerName === trigger.triggerName &&
+                    // length 27 means {"event":"cos:ObjectCreated or {"event":"cos:ObjectRemove:
+                    t.triggerDesc.slice(0, 27) === trigger.triggerDesc.slice(0, 27))) {
+                await sdk.scf.requestAsync({
+                    Action: 'DeleteTrigger',
+                    Region: provider.region,
+                    ...trigger,
+                })
+            }
+
+            const res = await sdk.scf.requestAsync({
+                Action: 'SetTrigger',
+                Region: provider.region,
+                ...trigger,
+            })
+
+            if (res.code !== 0) {
+                const errorMessage = [
+                    `The function trigger ${trigger.type} "${trigger.triggerName}" you want to set is failure. `,
+                    JSON.stringify(res),
+                ].join('')
+                throw new Error(errorMessage)
+            }
+        }
     }
 
     /* deploy function */

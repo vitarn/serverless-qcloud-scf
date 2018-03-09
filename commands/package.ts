@@ -67,6 +67,7 @@ export class QcloudPackage extends QcloudCommand {
         const CloudFunctions = Resources.CloudFunctions = Resources.CloudFunctions || []
         const APIGateway = Resources.APIGateway = Resources.APIGateway || {}
         const APIGatewayApis = Resources.APIGatewayApis = Resources.APIGatewayApis || []
+        const FunctionTriggers = Resources.FunctionTriggers = Resources.FunctionTriggers || []
 
         Object.assign(DeploymentBucket, {
             Bucket: provider.deploymentBucketName,
@@ -140,8 +141,29 @@ export class QcloudPackage extends QcloudCommand {
                 funcObject.events.forEach(event => {
                     if (event.http) {
                         this.compileAPIGateway(event.http, funcObject, funcTemplate)
+                    } else {
+                        this.compileTrigger(event, funcTemplate.functionName)
                     }
                 })
+            }
+        })
+    }
+
+    validateEventsProperty(funcObject, functionName) {
+        const { serverless: { cli } } = this
+
+        if (!funcObject.events || funcObject.events.length === 0) {
+            cli.log(`WARN: Missing "events" property for function "${functionName}".`)
+        }
+
+        const supportedEvents = ['http', 'timer', 'cos', 'cmq']
+
+        funcObject.events.forEach(event => {
+            const eventType = Object.keys(event).pop()
+
+            if (!supportedEvents.includes(eventType)) {
+                throw new Error(`Event type "${eventType}" of function "${functionName}" not supported.
+          supported event types are: ${supportedEvents.join(', ')}`)
             }
         })
     }
@@ -179,23 +201,21 @@ export class QcloudPackage extends QcloudCommand {
         APIGatewayApis.push(_.omitBy(apiTemplate, _.isUndefined))
     }
 
-    validateEventsProperty(funcObject, functionName) {
-        const { serverless: { cli } } = this
+    compileTrigger(event, functionName) {
+        const { provider, options, serverless: { service, utils, cli } } = this
+        const { FunctionTriggers } = service.provider.compiledConfigurationTemplate.Resources
 
-        if (!funcObject.events || funcObject.events.length === 0) {
-            cli.log(`WARN: Missing "events" property for function "${functionName}".`)
-        }
-
-        const supportedEvents = ['http', 'timer', 'cos', 'cmq']
-
-        funcObject.events.forEach(event => {
-            const eventType = Object.keys(event).pop()
-
-            if (!supportedEvents.includes(eventType)) {
-                throw new Error(`Event type "${eventType}" of function "${functionName}" not supported.
-          supported event types are: ${supportedEvents.join(', ')}`)
+        if (event.cos) {
+            const triggerTemplate = {
+                type: 'cos',
+                functionName,
+                triggerName: `${event.cos.name || functionName}-${provider.appId}.cos.${event.cos.region || provider.longRegion}.myqcloud.com`,
+                // WARN: triggerDesc must be string.
+                triggerDesc: JSON.stringify({ event: event.cos.event}),
             }
-        })
+
+            FunctionTriggers.push(triggerTemplate)
+        }
     }
 
     async generateArtifactDirectoryName() {

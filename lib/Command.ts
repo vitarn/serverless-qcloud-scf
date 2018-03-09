@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import { Serverless } from '../types'
 
 export class Command {

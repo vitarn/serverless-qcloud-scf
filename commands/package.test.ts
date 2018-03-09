@@ -195,6 +195,7 @@ describe('QcloudPackage', () => {
                         CloudFunctions: [],
                         APIGateway: {},
                         APIGatewayApis: [],
+                        FunctionTriggers: [],
                     },
                 }
 
