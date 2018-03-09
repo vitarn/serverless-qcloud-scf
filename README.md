@@ -7,7 +7,7 @@ English | [简体中文](./README.zh-CN.md)
 [![NPM][ico-npm]][link-npm]
 [![Build Status][ico-build]][link-build]
 [![Coverage Status][ico-codecov]][link-codecov]
-[![Conventional Commits][ico-commit][link-commit]
+[![Conventional Commits][ico-commit]][link-commit]
 
 This plugin enables support for [QCloud SCF][link-qcloud-scf] within the [Serverless Framework][link-gh-serverless].
 
