@@ -1,82 +1,82 @@
 {
-    "name": "serverless-qcloud-scf",
-    "version": "0.0.3",
-    "description": "Provider plugin for the Serverless Framework v1.x which adds support for Qcloud SCF(Serverless Cloud Function).",
-    "main": "index.js",
-    "author": "colder",
-    "license": "MIT",
-    "repository": {
-        "git": "https://github.com/vitarn/serverless-qcloud-scf"
-    },
-    "scripts": {
-        "test": "jest",
-        "testing": "jest --watch",
-        "coverage": "jest --maxWorkers=4 --coverage",
-        "typecheck": "tsc --noEmit",
-        "release": "standard-version",
-        "prepack": "tsc --removeComments --inlineSourceMap false | echo shut up"
-    },
-    "homepage": "https://github.com/vitarn/serverless-qcloud-scf",
-    "keywords": [
-        "serverless",
-        "serverless framework",
-        "serverless applications",
-        "serverless modules",
-        "serverless cloud function",
-        "qcloud",
-        "qcloud scf",
-        "iot",
-        "internet of things",
-        "serverless.com"
+  "name": "serverless-qcloud-scf",
+  "version": "0.0.4",
+  "description": "Provider plugin for the Serverless Framework v1.x which adds support for Qcloud SCF(Serverless Cloud Function).",
+  "main": "index.js",
+  "author": "colder",
+  "license": "MIT",
+  "repository": {
+    "git": "https://github.com/vitarn/serverless-qcloud-scf"
+  },
+  "scripts": {
+    "test": "jest",
+    "testing": "jest --watch",
+    "coverage": "jest --maxWorkers=4 --coverage",
+    "typecheck": "tsc --noEmit",
+    "release": "standard-version",
+    "prepack": "tsc --removeComments --inlineSourceMap false | echo shut up"
+  },
+  "homepage": "https://github.com/vitarn/serverless-qcloud-scf",
+  "keywords": [
+    "serverless",
+    "serverless framework",
+    "serverless applications",
+    "serverless modules",
+    "serverless cloud function",
+    "qcloud",
+    "qcloud scf",
+    "iot",
+    "internet of things",
+    "serverless.com"
+  ],
+  "dependencies": {
+    "async": "^2.6.0",
+    "bluebird": "^3.5.1",
+    "chalk": "^2.3.0",
+    "cos-nodejs-sdk-v5": "^2.2.6",
+    "fs-extra": "^5.0.0",
+    "ini": "^1.3.5",
+    "lodash": "^4.17.5",
+    "qcloud-apigateway": "^0.0.7",
+    "qcloudapi-sdk": "^0.1.6"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^5.0.0",
+    "@types/jest": "^22.1.3",
+    "@types/lodash": "^4.14.104",
+    "@types/node": "^9.4.6",
+    "@types/sinon": "^4.1.3",
+    "jest": "^22.2.2",
+    "sinon": "^4.2.2",
+    "standard-version": "^4.3.0",
+    "ts-jest": "^22.4.1",
+    "typescript": "^2.7.2"
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "files": [
+    "**/*.js",
+    "**/*.json",
+    "types/**/*.d.ts",
+    "!.vscode",
+    "!test",
+    "!*.test.js",
+    "!tsconfig*.json",
+    "!yarn.lock"
+  ],
+  "jest": {
+    "moduleFileExtensions": [
+      "ts",
+      "js",
+      "json",
+      "node"
     ],
-    "dependencies": {
-        "async": "^2.6.0",
-        "bluebird": "^3.5.1",
-        "chalk": "^2.3.0",
-        "cos-nodejs-sdk-v5": "^2.2.6",
-        "fs-extra": "^5.0.0",
-        "ini": "^1.3.5",
-        "lodash": "^4.17.5",
-        "qcloud-apigateway": "^0.0.7",
-        "qcloudapi-sdk": "^0.1.6"
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
     },
-    "devDependencies": {
-        "@types/fs-extra": "^5.0.0",
-        "@types/jest": "^22.1.3",
-        "@types/lodash": "^4.14.104",
-        "@types/node": "^9.4.6",
-        "@types/sinon": "^4.1.3",
-        "jest": "^22.2.2",
-        "sinon": "^4.2.2",
-        "standard-version": "^4.3.0",
-        "ts-jest": "^22.4.1",
-        "typescript": "^2.7.2"
-    },
-    "engines": {
-        "node": ">=4"
-    },
-    "files": [
-        "**/*.js",
-        "**/*.json",
-        "types/**/*.d.ts",
-        "!.vscode",
-        "!test",
-        "!*.test.js",
-        "!tsconfig*.json",
-        "!yarn.lock"
-    ],
-    "jest": {
-        "moduleFileExtensions": [
-            "ts",
-            "js",
-            "json",
-            "node"
-        ],
-        "transform": {
-            "^.+\\.ts$": "ts-jest"
-        },
-        "testMatch": [
-            "**/*.test.ts"
-        ]
-    }
+    "testMatch": [
+      "**/*.test.ts"
+    ]
+  }
 }
