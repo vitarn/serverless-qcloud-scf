@@ -7,6 +7,7 @@ English | [简体中文](./README.zh-CN.md)
 [![NPM][ico-npm]][link-npm]
 [![Build Status][ico-build]][link-build]
 [![Coverage Status][ico-codecov]][link-codecov]
+[![Conventional Commits][ico-commit][link-commit]
 
 This plugin enables support for [QCloud SCF][link-qcloud-scf] within the [Serverless Framework][link-gh-serverless].
 
@@ -191,12 +192,14 @@ MIT
 [ico-npm]: https://img.shields.io/npm/v/serverless-qcloud-scf.svg
 [ico-build]: https://travis-ci.org/vitarn/serverless-qcloud-scf.svg?branch=master
 [ico-codecov]: https://codecov.io/gh/vitarn/serverless-qcloud-scf/branch/master/graph/badge.svg
+[ico-commit]: https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg
 
 [link-serverless]: http://www.serverless.com/
 [link-license]: ./blob/master/LICENSE
 [link-npm]: https://www.npmjs.com/package/serverless-qcloud-scf
 [link-build]: https://travis-ci.org/vitarn/serverless-qcloud-scf
 [link-codecov]: https://codecov.io/gh/vitarn/serverless-qcloud-scf
+[link-commit]: https://conventionalcommits.org
 
 [link-gh-serverless]: https://github.com/serverless/serverless
 [link-gh-dotenv]: https://github.com/motdotla/dotenv
