@@ -2,6 +2,8 @@ English | [简体中文](./README.zh-CN.md)
 
 # Serverless QCloud SCF(Serverless Cloud Function) Plugin
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/vitarn/serverless-qcloud-scf.svg)](https://greenkeeper.io/)
+
 [![Serverless][ico-serverless]][link-serverless]
 [![License][ico-license]][link-license]
 [![NPM][ico-npm]][link-npm]

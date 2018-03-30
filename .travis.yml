@@ -37,6 +37,7 @@ branches:
   only:
     - master
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    - /^greenkeeper/.*$/
 
 cache: yarn
 
