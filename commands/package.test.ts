@@ -526,7 +526,7 @@ describe('QcloudPackage', () => {
                 region: 'sh',
             }
             qcloudPackage = new QcloudPackage(serverless, options)
-            statSyncStub = sinon.stub(fs, 'statSync').returns({ size: 99 })
+            statSyncStub = sinon.stub(fs, 'statSync').returns({ size: 99 } as any)
         })
 
         afterEach(() => {
